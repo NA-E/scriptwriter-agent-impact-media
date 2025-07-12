@@ -344,7 +344,11 @@ export default function Dashboard() {
                       </tr>
                     ) : (
                       projects.map((project) => (
-                        <tr key={project.id} className="hover:bg-gray-700/30">
+                        <tr 
+                          key={project.id} 
+                          className="hover:bg-gray-700/30 cursor-pointer"
+                          onClick={() => window.location.href = `/project/${project.id}`}
+                        >
                           <td className="px-6 py-4">
                             <div className="flex items-center">
                               <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center mr-3">
@@ -375,10 +379,10 @@ export default function Dashboard() {
                               <div className="w-16 bg-gray-700 rounded-full h-2 mr-2">
                                 <div 
                                   className="bg-blue-600 h-2 rounded-full" 
-                                  style={{width: `${((project.current_step || 0) / 5) * 100}%`}}
+                                  style={{width: `${((project.current_step || 0) / 3) * 100}%`}}
                                 ></div>
                               </div>
-                              <span className="text-gray-400 text-sm">{project.current_step || 0}/5</span>
+                              <span className="text-gray-400 text-sm">{project.current_step || 0}/3</span>
                             </div>
                           </td>
                         </tr>
