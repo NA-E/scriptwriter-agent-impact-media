@@ -1,13 +1,24 @@
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
-import { LogOut, Box, User, ChevronDown } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog'
+import { LogOut, Box, User, ChevronDown, X } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 
 export default function Dashboard() {
   const { user, signOut } = useAuth()
   const { toast } = useToast()
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+  const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false)
+  const [projectForm, setProjectForm] = useState({
+    name: '',
+    clientName: '',
+    youtubeUrl: '',
+    context: ''
+  })
   const menuRef = useRef<HTMLDivElement>(null)
 
   const handleSignOut = async () => {
@@ -43,6 +54,36 @@ export default function Dashboard() {
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [])
+
+  const handleProjectFormChange = (field: string, value: string) => {
+    setProjectForm(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleCreateProject = () => {
+    if (!projectForm.name || !projectForm.clientName || !projectForm.youtubeUrl || !projectForm.context) {
+      toast({
+        title: "Error",
+        description: "All fields are required",
+        variant: "destructive"
+      })
+      return
+    }
+
+    // Here you would typically save the project to your backend
+    toast({
+      title: "Success",
+      description: "Project created successfully",
+    })
+    
+    // Reset form and close modal
+    setProjectForm({ name: '', clientName: '', youtubeUrl: '', context: '' })
+    setIsNewProjectModalOpen(false)
+  }
+
+  const handleCancelProject = () => {
+    setProjectForm({ name: '', clientName: '', youtubeUrl: '', context: '' })
+    setIsNewProjectModalOpen(false)
+  }
 
 
 
@@ -110,7 +151,10 @@ export default function Dashboard() {
                 <h1 className="text-3xl font-bold text-white mb-2">Projects</h1>
                 <p className="text-gray-400">Manage your YouTube scriptwriting projects</p>
               </div>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Button 
+                onClick={() => setIsNewProjectModalOpen(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
                 + New Project
               </Button>
             </div>
@@ -194,6 +238,95 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
+
+      {/* New Project Modal */}
+      <Dialog open={isNewProjectModalOpen} onOpenChange={setIsNewProjectModalOpen}>
+        <DialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">
+              Create New Project
+            </DialogTitle>
+            <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </DialogClose>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="projectName" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Project Name
+              </Label>
+              <Input
+                id="projectName"
+                value={projectForm.name}
+                onChange={(e) => handleProjectFormChange('name', e.target.value)}
+                placeholder="Enter project name..."
+                className="mt-1 bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="clientName" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Client Name
+              </Label>
+              <Input
+                id="clientName"
+                value={projectForm.clientName}
+                onChange={(e) => handleProjectFormChange('clientName', e.target.value)}
+                placeholder="Enter client name..."
+                className="mt-1 bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="youtubeUrl" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                YouTube URL
+              </Label>
+              <Input
+                id="youtubeUrl"
+                value={projectForm.youtubeUrl}
+                onChange={(e) => handleProjectFormChange('youtubeUrl', e.target.value)}
+                placeholder="https://youtube.com/watch?v=..."
+                className="mt-1 bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="context" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Project Context
+              </Label>
+              <Textarea
+                id="context"
+                value={projectForm.context}
+                onChange={(e) => handleProjectFormChange('context', e.target.value)}
+                placeholder="Describe the video concept, target audience, key points to cover..."
+                className="mt-1 bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white min-h-20"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-3 mt-6">
+            <Button
+              onClick={handleCancelProject}
+              variant="outline"
+              className="px-6 py-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateProject}
+              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              Create Project
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Footer */}
       <footer className="relative z-10 px-6 py-6 border-t border-gray-800">
