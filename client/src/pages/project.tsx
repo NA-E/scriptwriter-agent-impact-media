@@ -215,16 +215,50 @@ export default function ProjectPage() {
     try {
       const data = JSON.parse(stepData.raw_response)
 
+      const renderValue = (value: any) => {
+        if (Array.isArray(value)) {
+          // Handle arrays (like Target Audience, Transitional Phrases, etc.)
+          return (
+            <ul className="list-disc list-inside space-y-1 text-gray-300">
+              {value.map((item, index) => (
+                <li key={index}>{String(item)}</li>
+              ))}
+            </ul>
+          )
+        } else if (typeof value === 'object' && value !== null) {
+          // Handle objects (like nested key-value pairs)
+          return (
+            <div className="space-y-2 ml-4">
+              {Object.entries(value).map(([subKey, subValue]) => (
+                <div key={subKey} className="space-y-1">
+                  <h4 className="font-medium text-gray-400 text-sm">
+                    {subKey.replace(/[-_]/g, ' ')}
+                  </h4>
+                  <div className="text-gray-300">
+                    {String(subValue)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        } else {
+          // Handle strings
+          return (
+            <div className="text-gray-300 whitespace-pre-wrap">
+              {String(value)}
+            </div>
+          )
+        }
+      }
+
       return (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {Object.entries(data).map(([key, value]) => (
-            <div key={key} className="space-y-2">
+            <div key={key} className="space-y-3">
               <h3 className="font-bold text-white text-lg capitalize">
                 {key.replace(/[-_]/g, ' ')}
               </h3>
-              <div className="text-gray-300 whitespace-pre-wrap">
-                {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
-              </div>
+              {renderValue(value)}
             </div>
           ))}
         </div>
