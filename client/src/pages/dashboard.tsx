@@ -5,32 +5,24 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog'
-import { LogOut, Box, User, ChevronDown, X } from 'lucide-react'
+import { LogOut, Box, User, ChevronDown, X, Loader2 } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
+import { supabase, type Database } from '@/lib/supabase'
 
 export default function Dashboard() {
   const { user, signOut } = useAuth()
   const { toast } = useToast()
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false)
-  const [projects, setProjects] = useState([
-    {
-      id: 1,
-      name: 'abc',
-      clientName: 'acb',
-      youtubeUrl: 'avfgr',
-      context: 'Sample project context',
-      status: 'Draft',
-      createdAt: new Date('2025-07-12'),
-      progress: 1
-    }
-  ])
+  const [projects, setProjects] = useState<Database['public']['Tables']['projects']['Row'][]>([])
   const [projectForm, setProjectForm] = useState({
     name: '',
     clientName: '',
     youtubeUrl: '',
     context: ''
   })
+  const [isLoading, setIsLoading] = useState(true)
+  const [isCreating, setIsCreating] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
   const handleSignOut = async () => {
@@ -71,7 +63,7 @@ export default function Dashboard() {
     setProjectForm(prev => ({ ...prev, [field]: value }))
   }
 
-  const handleCreateProject = () => {
+  const handleCreateProject = async () => {
     if (!projectForm.name || !projectForm.clientName || !projectForm.youtubeUrl || !projectForm.context) {
       toast({
         title: "Error",
@@ -81,29 +73,57 @@ export default function Dashboard() {
       return
     }
 
-    // Create new project
-    const newProject = {
-      id: Date.now(), // Simple ID generation
-      name: projectForm.name,
-      clientName: projectForm.clientName,
-      youtubeUrl: projectForm.youtubeUrl,
-      context: projectForm.context,
-      status: 'Draft',
-      createdAt: new Date(),
-      progress: 1
+    if (!user?.id) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create a project",
+        variant: "destructive"
+      })
+      return
     }
 
-    // Add to projects list
-    setProjects(prev => [newProject, ...prev])
+    setIsCreating(true)
 
-    toast({
-      title: "Success",
-      description: "Project created successfully",
-    })
-    
-    // Reset form and close modal
-    setProjectForm({ name: '', clientName: '', youtubeUrl: '', context: '' })
-    setIsNewProjectModalOpen(false)
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .insert({
+          title: projectForm.name,
+          youtube_url: projectForm.youtubeUrl,
+          context: projectForm.context,
+          client_info: projectForm.clientName,
+          status: 'draft',
+          current_step: 0,
+          created_by: user.id
+        })
+        .select()
+        .single()
+
+      if (error) {
+        throw error
+      }
+
+      // Add new project to the list
+      setProjects(prev => [data, ...prev])
+
+      toast({
+        title: "Success",
+        description: "Project created successfully",
+      })
+      
+      // Reset form and close modal
+      setProjectForm({ name: '', clientName: '', youtubeUrl: '', context: '' })
+      setIsNewProjectModalOpen(false)
+    } catch (error: any) {
+      console.error('Error creating project:', error)
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create project",
+        variant: "destructive"
+      })
+    } finally {
+      setIsCreating(false)
+    }
   }
 
   const handleCancelProject = () => {
@@ -111,24 +131,88 @@ export default function Dashboard() {
     setIsNewProjectModalOpen(false)
   }
 
+  const fetchProjects = async () => {
+    if (!user?.id) return
+
+    setIsLoading(true)
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('created_by', user.id)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        throw error
+      }
+
+      setProjects(data || [])
+    } catch (error: any) {
+      console.error('Error fetching projects:', error)
+      toast({
+        title: "Error",
+        description: "Failed to load projects",
+        variant: "destructive"
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const getProjectInitial = (name: string) => {
     return name.charAt(0).toUpperCase()
   }
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', { 
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'N/A'
+    return new Date(dateString).toLocaleDateString('en-US', { 
       year: 'numeric', 
       month: 'short', 
       day: 'numeric' 
     })
   }
 
-  const getDaysAgo = (date: Date) => {
+  const getDaysAgo = (dateString: string | null) => {
+    if (!dateString) return 'N/A'
+    const date = new Date(dateString)
     const now = new Date()
     const diffTime = Math.abs(now.getTime() - date.getTime())
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
     return diffDays === 0 ? 'Today' : `${diffDays} days ago`
   }
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'draft':
+        return 'bg-yellow-600/20 text-yellow-400'
+      case 'in_progress':
+        return 'bg-blue-600/20 text-blue-400'
+      case 'completed':
+        return 'bg-green-600/20 text-green-400'
+      default:
+        return 'bg-gray-600/20 text-gray-400'
+    }
+  }
+
+  const getStatusLabel = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'draft':
+        return 'Draft'
+      case 'in_progress':
+        return 'In Progress'
+      case 'completed':
+        return 'Completed'
+      default:
+        return status
+    }
+  }
+
+  // Load projects when user is available
+  useEffect(() => {
+    if (user?.id) {
+      fetchProjects()
+    }
+  }, [user?.id])
 
 
 
@@ -240,46 +324,66 @@ export default function Dashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-700">
-                    {projects.map((project) => (
-                      <tr key={project.id} className="hover:bg-gray-700/30">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center">
-                            <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center mr-3">
-                              <span className="text-white font-medium text-sm">
-                                {getProjectInitial(project.name)}
-                              </span>
-                            </div>
-                            <div>
-                              <div className="text-white font-medium">{project.name}</div>
-                              <div className="text-gray-400 text-sm truncate max-w-xs">
-                                {project.youtubeUrl}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-white">{project.clientName}</td>
-                        <td className="px-6 py-4">
-                          <span className="bg-yellow-600/20 text-yellow-400 px-2 py-1 rounded-full text-xs">
-                            {project.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-white">{formatDate(project.createdAt)}</div>
-                          <div className="text-gray-400 text-sm">{getDaysAgo(project.createdAt)}</div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center">
-                            <div className="w-16 bg-gray-700 rounded-full h-2 mr-2">
-                              <div 
-                                className="bg-blue-600 h-2 rounded-full" 
-                                style={{width: `${(project.progress / 5) * 100}%`}}
-                              ></div>
-                            </div>
-                            <span className="text-gray-400 text-sm">{project.progress}/5</span>
+                    {isLoading ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-12 text-center">
+                          <div className="flex items-center justify-center">
+                            <Loader2 className="h-6 w-6 animate-spin text-gray-400 mr-2" />
+                            <span className="text-gray-400">Loading projects...</span>
                           </div>
                         </td>
                       </tr>
-                    ))}
+                    ) : projects.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-12 text-center">
+                          <div className="text-gray-400">
+                            <p className="text-lg mb-2">No projects yet</p>
+                            <p className="text-sm">Create your first project to get started</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      projects.map((project) => (
+                        <tr key={project.id} className="hover:bg-gray-700/30">
+                          <td className="px-6 py-4">
+                            <div className="flex items-center">
+                              <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center mr-3">
+                                <span className="text-white font-medium text-sm">
+                                  {getProjectInitial(project.title)}
+                                </span>
+                              </div>
+                              <div>
+                                <div className="text-white font-medium">{project.title}</div>
+                                <div className="text-gray-400 text-sm truncate max-w-xs">
+                                  {project.youtube_url}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-white">{project.client_info || 'N/A'}</td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(project.status)}`}>
+                              {getStatusLabel(project.status)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-white">{formatDate(project.created_at)}</div>
+                            <div className="text-gray-400 text-sm">{getDaysAgo(project.created_at)}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center">
+                              <div className="w-16 bg-gray-700 rounded-full h-2 mr-2">
+                                <div 
+                                  className="bg-blue-600 h-2 rounded-full" 
+                                  style={{width: `${((project.current_step || 0) / 5) * 100}%`}}
+                                ></div>
+                              </div>
+                              <span className="text-gray-400 text-sm">{project.current_step || 0}/5</span>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -374,9 +478,17 @@ export default function Dashboard() {
             </Button>
             <Button
               onClick={handleCreateProject}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={isCreating}
+              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
             >
-              Create Project
+              {isCreating ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Creating...
+                </>
+              ) : (
+                'Create Project'
+              )}
             </Button>
           </div>
         </DialogContent>
