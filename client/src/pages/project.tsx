@@ -210,12 +210,10 @@ export default function ProjectPage() {
   }
 
   const renderAnalysisData = (stepData: ProjectStep) => {
-    if (!stepData.step_data) return null
+    if (!stepData.raw_response) return null
 
     try {
-      const data = typeof stepData.step_data === 'string' 
-        ? JSON.parse(stepData.step_data) 
-        : stepData.step_data
+      const data = JSON.parse(stepData.raw_response)
 
       return (
         <div className="space-y-4">
@@ -232,7 +230,7 @@ export default function ProjectPage() {
         </div>
       )
     } catch (error) {
-      console.error('Error parsing step data:', error)
+      console.error('Error parsing raw response:', error)
       return (
         <div className="text-gray-400">
           Unable to parse analysis data
