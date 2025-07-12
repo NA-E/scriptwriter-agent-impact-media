@@ -1,11 +1,14 @@
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
-import { LogOut, Box } from 'lucide-react'
+import { LogOut, Box, User, ChevronDown } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
 
 export default function Dashboard() {
   const { user, signOut } = useAuth()
   const { toast } = useToast()
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   const handleSignOut = async () => {
     try {
@@ -22,6 +25,24 @@ export default function Dashboard() {
       })
     }
   }
+
+  const getUserInitials = () => {
+    if (!user?.email) return 'U'
+    return user.email.charAt(0).toUpperCase()
+  }
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
 
 
 
@@ -40,17 +61,41 @@ export default function Dashboard() {
             </div>
             <span className="text-xl font-semibold">YouTube ScriptWriter Agent</span>
           </div>
-          <div className="flex items-center space-x-4">
-            <span className="text-gray-300 text-sm">{user?.email}</span>
-            <Button 
-              onClick={handleSignOut}
-              variant="outline"
-              size="sm"
-              className="bg-transparent border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
+          <div className="relative" ref={menuRef}>
+            <button 
+              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+              className="flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg px-3 py-2 transition-colors"
             >
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
-            </Button>
+              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                <span className="text-white font-medium text-sm">{getUserInitials()}</span>
+              </div>
+              <ChevronDown className="w-4 h-4 text-gray-400" />
+            </button>
+            
+            {isUserMenuOpen && (
+              <div className="absolute right-0 mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50">
+                <div className="p-4 border-b border-gray-700">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-medium">{getUserInitials()}</span>
+                    </div>
+                    <div>
+                      <div className="text-white font-medium">User</div>
+                      <div className="text-gray-400 text-sm break-all">{user?.email}</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-2">
+                  <button 
+                    onClick={handleSignOut}
+                    className="w-full flex items-center space-x-2 px-3 py-2 text-gray-300 hover:bg-gray-700 rounded-lg transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </nav>
