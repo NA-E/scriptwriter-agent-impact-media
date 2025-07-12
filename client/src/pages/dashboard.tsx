@@ -13,6 +13,18 @@ export default function Dashboard() {
   const { toast } = useToast()
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false)
+  const [projects, setProjects] = useState([
+    {
+      id: 1,
+      name: 'abc',
+      clientName: 'acb',
+      youtubeUrl: 'avfgr',
+      context: 'Sample project context',
+      status: 'Draft',
+      createdAt: new Date('2025-07-12'),
+      progress: 1
+    }
+  ])
   const [projectForm, setProjectForm] = useState({
     name: '',
     clientName: '',
@@ -69,7 +81,21 @@ export default function Dashboard() {
       return
     }
 
-    // Here you would typically save the project to your backend
+    // Create new project
+    const newProject = {
+      id: Date.now(), // Simple ID generation
+      name: projectForm.name,
+      clientName: projectForm.clientName,
+      youtubeUrl: projectForm.youtubeUrl,
+      context: projectForm.context,
+      status: 'Draft',
+      createdAt: new Date(),
+      progress: 1
+    }
+
+    // Add to projects list
+    setProjects(prev => [newProject, ...prev])
+
     toast({
       title: "Success",
       description: "Project created successfully",
@@ -83,6 +109,25 @@ export default function Dashboard() {
   const handleCancelProject = () => {
     setProjectForm({ name: '', clientName: '', youtubeUrl: '', context: '' })
     setIsNewProjectModalOpen(false)
+  }
+
+  const getProjectInitial = (name: string) => {
+    return name.charAt(0).toUpperCase()
+  }
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    })
+  }
+
+  const getDaysAgo = (date: Date) => {
+    const now = new Date()
+    const diffTime = Math.abs(now.getTime() - date.getTime())
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+    return diffDays === 0 ? 'Today' : `${diffDays} days ago`
   }
 
 
@@ -195,37 +240,46 @@ export default function Dashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-700">
-                    <tr className="hover:bg-gray-700/30">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center mr-3">
-                            <span className="text-white font-medium text-sm">A</span>
+                    {projects.map((project) => (
+                      <tr key={project.id} className="hover:bg-gray-700/30">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center">
+                            <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center mr-3">
+                              <span className="text-white font-medium text-sm">
+                                {getProjectInitial(project.name)}
+                              </span>
+                            </div>
+                            <div>
+                              <div className="text-white font-medium">{project.name}</div>
+                              <div className="text-gray-400 text-sm truncate max-w-xs">
+                                {project.youtubeUrl}
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <div className="text-white font-medium">abc</div>
-                            <div className="text-gray-400 text-sm">avfgr</div>
+                        </td>
+                        <td className="px-6 py-4 text-white">{project.clientName}</td>
+                        <td className="px-6 py-4">
+                          <span className="bg-yellow-600/20 text-yellow-400 px-2 py-1 rounded-full text-xs">
+                            {project.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-white">{formatDate(project.createdAt)}</div>
+                          <div className="text-gray-400 text-sm">{getDaysAgo(project.createdAt)}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center">
+                            <div className="w-16 bg-gray-700 rounded-full h-2 mr-2">
+                              <div 
+                                className="bg-blue-600 h-2 rounded-full" 
+                                style={{width: `${(project.progress / 5) * 100}%`}}
+                              ></div>
+                            </div>
+                            <span className="text-gray-400 text-sm">{project.progress}/5</span>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-white">acb</td>
-                      <td className="px-6 py-4">
-                        <span className="bg-yellow-600/20 text-yellow-400 px-2 py-1 rounded-full text-xs">
-                          Draft
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-white">Jul 12, 2025</div>
-                        <div className="text-gray-400 text-sm">0 days ago</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center">
-                          <div className="w-16 bg-gray-700 rounded-full h-2 mr-2">
-                            <div className="bg-blue-600 h-2 rounded-full" style={{width: '20%'}}></div>
-                          </div>
-                          <span className="text-gray-400 text-sm">1/5</span>
-                        </div>
-                      </td>
-                    </tr>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -233,7 +287,7 @@ export default function Dashboard() {
             
             {/* Results Count */}
             <div className="mt-4 text-sm text-gray-400">
-              Showing 1 of 1 projects
+              Showing {projects.length} of {projects.length} projects
             </div>
           </div>
         </div>
