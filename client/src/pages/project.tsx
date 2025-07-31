@@ -111,13 +111,7 @@ export default function ProjectPage() {
     
     setIsProcessing(true)
     try {
-      const webhookUrl = import.meta.env.VITE_TRANSCRIPT_ANALYSIS_WEBHOOK_URL
-      
-      if (!webhookUrl) {
-        throw new Error('Webhook URL not configured')
-      }
-
-      const response = await fetch(webhookUrl, {
+      const response = await fetch('/api/webhook/transcript-analysis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
