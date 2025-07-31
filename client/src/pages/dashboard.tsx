@@ -243,7 +243,7 @@ export default function Dashboard() {
             </button>
             
             {isUserMenuOpen && (
-              <div className="absolute right-0 mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50">
+              <div className="absolute right-0 mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-[9999]">
                 <div className="p-4 border-b border-gray-700">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
