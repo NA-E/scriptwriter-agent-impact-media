@@ -7,7 +7,23 @@ import { useParams, useLocation } from 'wouter'
 import { supabase, type Database } from '@/lib/supabase'
 
 type Project = Database['public']['Tables']['projects']['Row']
-type ProjectStep = Database['public']['Tables']['project_steps']['Row']
+type ProjectStep = {
+  id: string
+  project_id: string | null
+  step_number: number
+  step_name: string
+  status: string
+  step_data: any
+  raw_response: string | null
+  error_message: string | null
+  processing_time: number | null
+  started_at: string | null
+  completed_at: string | null
+  updated_by: string | null
+  created_at: string | null
+  updated_at: string | null
+  processing_cost: number | null
+}
 
 export default function ProjectPage() {
   const { user } = useAuth()
@@ -22,6 +38,7 @@ export default function ProjectPage() {
   const [currentStep, setCurrentStep] = useState(1)
   const [isProcessing, setIsProcessing] = useState(false)
   const [activeTab, setActiveTab] = useState('transcript')
+  const [isSaving, setIsSaving] = useState(false)
 
   const steps = [
     { id: 1, name: 'Transcript Analysis', key: 'transcript', status: 'current' },
@@ -185,6 +202,37 @@ export default function ProjectPage() {
     setTimeout(() => {
       clearInterval(pollInterval)
     }, 300000)
+  }
+
+  const saveProjectChanges = async (updatedProject: Partial<Project>) => {
+    if (!projectId || !user?.id) return
+
+    setIsSaving(true)
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update(updatedProject)
+        .eq('id', projectId)
+        .eq('created_by', user.id)
+
+      if (error) {
+        throw error
+      }
+
+      toast({
+        title: "Saved",
+        description: "Project changes saved successfully",
+      })
+    } catch (error: any) {
+      console.error('Error saving project:', error)
+      toast({
+        title: "Error",
+        description: "Failed to save changes",
+        variant: "destructive"
+      })
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const getStepIcon = (step: typeof steps[0]) => {
@@ -415,18 +463,37 @@ export default function ProjectPage() {
                           <label className="block text-sm font-medium text-gray-300 mb-2">
                             Project Context
                           </label>
-                          <div className="bg-gray-700 rounded-lg p-3 text-gray-300">
-                            {project.context}
-                          </div>
+                          <textarea
+                            value={project.context}
+                            onChange={(e) => {
+                              const newContext = e.target.value
+                              setProject(prev => prev ? { ...prev, context: newContext } : null)
+                            }}
+                            onBlur={(e) => {
+                              saveProjectChanges({ context: e.target.value })
+                            }}
+                            className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-gray-300 resize-vertical min-h-[80px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter project context..."
+                          />
                         </div>
                         
                         <div>
                           <label className="block text-sm font-medium text-gray-300 mb-2">
                             YouTube URL
                           </label>
-                          <div className="bg-gray-700 rounded-lg p-3 text-gray-300">
-                            {project.youtube_url}
-                          </div>
+                          <input
+                            type="url"
+                            value={project.youtube_url}
+                            onChange={(e) => {
+                              const newUrl = e.target.value
+                              setProject(prev => prev ? { ...prev, youtube_url: newUrl } : null)
+                            }}
+                            onBlur={(e) => {
+                              saveProjectChanges({ youtube_url: e.target.value })
+                            }}
+                            className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="https://youtube.com/watch?v=..."
+                          />
                         </div>
                       </div>
 
