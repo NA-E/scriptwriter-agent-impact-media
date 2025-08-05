@@ -248,7 +248,25 @@ export default function ProjectPage() {
     if (stepData) {
       return stepData.status
     }
-    return stepId <= currentStep ? 'available' : 'upcoming'
+    
+    // Check if previous step is completed to determine availability
+    if (stepId === 1) {
+      return 'available' // First step is always available
+    } else {
+      const previousStepData = projectSteps.find(s => s.step_number === stepId - 1)
+      if (previousStepData && previousStepData.status === 'completed') {
+        return 'available'
+      }
+    }
+    
+    return 'upcoming'
+  }
+
+  const isStepUnlocked = (stepId: number) => {
+    if (stepId === 1) return true // First step always unlocked
+    
+    const previousStepData = projectSteps.find(s => s.step_number === stepId - 1)
+    return previousStepData && previousStepData.status === 'completed'
   }
 
   const renderAnalysisData = (stepData: ProjectStep) => {
@@ -390,7 +408,7 @@ export default function ProjectPage() {
               const stepStatus = getStepStatus(step.id)
               const isActive = activeTab === step.key
               const isCompleted = stepStatus === 'completed'
-              const isDisabled = stepStatus === 'upcoming'
+              const isDisabled = !isStepUnlocked(step.id)
               
               return (
                 <button
@@ -532,6 +550,13 @@ export default function ProjectPage() {
                       <p className="text-gray-400">Processing research...</p>
                     </div>
                   )
+                } else if (isStepUnlocked(2)) {
+                  return (
+                    <div className="text-center py-8">
+                      <p className="text-gray-400 mb-4">Research step is ready to begin</p>
+                      <p className="text-gray-500 text-sm">This step will be implemented in the next phase</p>
+                    </div>
+                  )
                 } else {
                   return (
                     <div className="text-center py-8">
@@ -558,6 +583,13 @@ export default function ProjectPage() {
                     <div className="text-center py-8">
                       <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto mb-4" />
                       <p className="text-gray-400">Generating script outline...</p>
+                    </div>
+                  )
+                } else if (isStepUnlocked(3)) {
+                  return (
+                    <div className="text-center py-8">
+                      <p className="text-gray-400 mb-4">Script outline generation is ready to begin</p>
+                      <p className="text-gray-500 text-sm">This step will be implemented in the next phase</p>
                     </div>
                   )
                 } else {
