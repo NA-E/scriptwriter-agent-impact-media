@@ -529,8 +529,7 @@ export default function ProjectPage() {
                 const stepData = projectSteps.find(s => s.step_number === 1)
                 
                 if (stepData && stepData.status === 'completed') {
-                  // Debug: log the stepData to see what we have
-                  console.log('Step data for transcript analysis:', stepData)
+
                   
                   return (
                     <div>
@@ -540,7 +539,7 @@ export default function ProjectPage() {
                             <CheckCircle className="h-5 w-5 mr-2" />
                             Analysis completed successfully
                           </div>
-                          {stepData.processing_cost !== null && stepData.processing_cost !== undefined && (
+                          {typeof stepData.processing_cost === 'number' && (
                             <div className="text-sm text-green-300">
                               Cost: ${stepData.processing_cost.toFixed(4)}
                             </div>
