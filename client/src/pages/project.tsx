@@ -1,7 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
-import { ArrowLeft, Play, CheckCircle, Circle, Clock, Loader2 } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Play, CheckCircle, Circle, Clock, Loader2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useParams, useLocation } from 'wouter'
 import { supabase, type Database } from '@/lib/supabase'
@@ -37,6 +37,7 @@ export default function ProjectPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [currentStep, setCurrentStep] = useState(1)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [isResearchProcessing, setIsResearchProcessing] = useState(false)
   const [activeTab, setActiveTab] = useState('transcript')
   const [isSaving, setIsSaving] = useState(false)
 
@@ -198,6 +199,64 @@ export default function ProjectPage() {
     }, 300000)
   }
 
+  const startResearchStep = async () => {
+    if (!project || !user?.id) return
+    
+    setIsResearchProcessing(true)
+    setActiveTab('research') // Switch to research tab
+    
+    try {
+      // Create or update research step as processing
+      const { error } = await supabase
+        .from('project_steps')
+        .upsert({
+          project_id: projectId,
+          step_number: 2,
+          status: 'processing',
+          created_by: user.id
+        })
+
+      if (error) {
+        throw error
+      }
+
+      // Refresh project steps by refetching
+      const { data: updatedSteps } = await supabase
+        .from('project_steps')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('step_number', { ascending: true })
+
+      if (updatedSteps) {
+        setProjectSteps(updatedSteps)
+      }
+
+      toast({
+        title: "Research Started",
+        description: "Research step is now processing",
+      })
+
+      // TODO: Add actual research webhook call here
+      // For now, just simulate processing
+      setTimeout(() => {
+        toast({
+          title: "Coming Soon",
+          description: "Research processing will be implemented in the next phase",
+        })
+        setIsResearchProcessing(false)
+      }, 3000)
+
+    } catch (error: any) {
+      console.error('Error starting research:', error)
+      toast({
+        title: "Error",
+        description: "Failed to start research step",
+        variant: "destructive"
+      })
+      setIsResearchProcessing(false)
+    }
+  }
+
   const saveProjectChanges = async (updatedProject: Partial<Project>) => {
     if (!projectId || !user?.id) return
 
@@ -321,6 +380,29 @@ export default function ProjectPage() {
               {renderValue(value)}
             </div>
           ))}
+          
+          {/* Continue to Research button - only show if step 1 is completed and step 2 is not started */}
+          {stepData.step_number === 1 && isStepUnlocked(2) && !projectSteps.find(s => s.step_number === 2) && (
+            <div className="pt-4 border-t border-gray-700">
+              <Button 
+                onClick={startResearchStep}
+                disabled={isResearchProcessing}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {isResearchProcessing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Starting Research...
+                  </>
+                ) : (
+                  <>
+                    Continue to Research
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
         </div>
       )
     } catch (error) {
