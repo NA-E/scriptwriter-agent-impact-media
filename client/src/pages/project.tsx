@@ -220,6 +220,34 @@ export default function ProjectPage() {
         throw error
       }
 
+      // Call research webhook
+      const response = await fetch('/api/webhook/research', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          'project-id': project.id,
+          'user-id': user.id
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Research webhook request failed')
+      }
+
+      const result = await response.json()
+      
+      if (result.success) {
+        toast({
+          title: "Research Started",
+          description: "Research step is now processing",
+        })
+        
+        // Start polling for results
+        startPollingForResearchResults()
+      } else {
+        throw new Error(result.message || 'Research webhook failed')
+      }
+
       // Refresh project steps by refetching
       const { data: updatedSteps } = await supabase
         .from('project_steps')
@@ -231,30 +259,62 @@ export default function ProjectPage() {
         setProjectSteps(updatedSteps)
       }
 
-      toast({
-        title: "Research Started",
-        description: "Research step is now processing",
-      })
-
-      // TODO: Add actual research webhook call here
-      // For now, just simulate processing
-      setTimeout(() => {
-        toast({
-          title: "Coming Soon",
-          description: "Research processing will be implemented in the next phase",
-        })
-        setIsResearchProcessing(false)
-      }, 3000)
-
     } catch (error: any) {
       console.error('Error starting research:', error)
       toast({
         title: "Error",
-        description: "Failed to start research step",
+        description: error.message || "Failed to start research step",
         variant: "destructive"
       })
       setIsResearchProcessing(false)
     }
+  }
+
+  const startPollingForResearchResults = () => {
+    const pollInterval = setInterval(async () => {
+      try {
+        const { data: stepsData, error } = await supabase
+          .from('project_steps')
+          .select('*')
+          .eq('project_id', projectId)
+          .eq('step_number', 2)
+          .eq('status', 'completed')
+
+        if (error) {
+          console.error('Error polling for research results:', error)
+          return
+        }
+
+        if (stepsData && stepsData.length > 0) {
+          // Results found, update state and stop polling
+          setProjectSteps(prev => {
+            const existing = prev.find(step => step.step_number === 2)
+            if (existing) {
+              return prev.map(step => 
+                step.step_number === 2 ? stepsData[0] : step
+              )
+            } else {
+              return [...prev, stepsData[0]]
+            }
+          })
+          
+          clearInterval(pollInterval)
+          setIsResearchProcessing(false)
+          toast({
+            title: "Research Complete",
+            description: "Research step has been completed successfully",
+          })
+        }
+      } catch (error) {
+        console.error('Error polling for research results:', error)
+      }
+    }, 3000) // Poll every 3 seconds
+
+    // Stop polling after 5 minutes
+    setTimeout(() => {
+      clearInterval(pollInterval)
+      setIsResearchProcessing(false)
+    }, 300000)
   }
 
   const saveProjectChanges = async (updatedProject: Partial<Project>) => {
