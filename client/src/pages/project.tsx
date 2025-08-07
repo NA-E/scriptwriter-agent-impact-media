@@ -454,8 +454,6 @@ export default function ProjectPage() {
             <h1 className="text-3xl font-bold text-white">{project.title}</h1>
             <div className="flex items-center space-x-4 mt-2 text-gray-400">
               <span>Client: {project.client_info || 'N/A'}</span>
-              <span>•</span>
-              <span>Status: {project.status}</span>
             </div>
             <div className="mt-2 text-sm text-gray-400">
               YouTube URL: {project.youtube_url}
@@ -534,9 +532,16 @@ export default function ProjectPage() {
                   return (
                     <div>
                       <div className="mb-4 p-3 bg-green-900/20 border border-green-700 rounded-lg">
-                        <div className="flex items-center text-green-400">
-                          <CheckCircle className="h-5 w-5 mr-2" />
-                          Analysis completed successfully
+                        <div className="flex items-center justify-between text-green-400">
+                          <div className="flex items-center">
+                            <CheckCircle className="h-5 w-5 mr-2" />
+                            Analysis completed successfully
+                          </div>
+                          {stepData.processing_cost && (
+                            <div className="text-sm text-green-300">
+                              Cost: ${stepData.processing_cost.toFixed(4)}
+                            </div>
+                          )}
                         </div>
                       </div>
                       {renderAnalysisData(stepData)}
