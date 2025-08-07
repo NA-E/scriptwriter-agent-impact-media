@@ -328,6 +328,72 @@ export default function ProjectPage() {
     return previousStepData && previousStepData.status === 'completed'
   }
 
+  // Reusable component for success banner
+  const renderSuccessBanner = (stepData: ProjectStep, message: string) => (
+    <div className="mb-4 p-3 bg-green-900/20 border border-green-700 rounded-lg">
+      <div className="flex items-center justify-between text-green-400">
+        <div className="flex items-center">
+          <CheckCircle className="h-5 w-5 mr-2" />
+          {message}
+        </div>
+        {typeof stepData.processing_cost === 'number' && (
+          <div className="text-sm text-green-300">
+            Cost: ${stepData.processing_cost.toFixed(4)}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+
+  // Reusable component for processing state
+  const renderProcessingState = (message: string) => (
+    <div className="text-center py-8">
+      <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto mb-4" />
+      <p className="text-gray-400">{message}</p>
+    </div>
+  )
+
+  // Reusable component for locked state
+  const renderLockedState = (message: string) => (
+    <div className="text-center py-8">
+      <p className="text-gray-400">{message}</p>
+    </div>
+  )
+
+  // Reusable component for ready state
+  const renderReadyState = (message: string, subtitle?: string) => (
+    <div className="text-center py-8">
+      <p className="text-gray-400 mb-4">{message}</p>
+      {subtitle && <p className="text-gray-500 text-sm">{subtitle}</p>}
+    </div>
+  )
+
+  // Reusable step content renderer
+  const renderStepContent = (
+    stepNumber: number, 
+    completedMessage: string,
+    processingMessage: string,
+    readyMessage: string,
+    lockedMessage: string
+  ) => {
+    const stepData = projectSteps.find(s => s.step_number === stepNumber)
+    
+    if (stepData && stepData.status === 'completed') {
+      return (
+        <div>
+          {renderSuccessBanner(stepData, completedMessage)}
+          {renderAnalysisData(stepData)}
+        </div>
+      )
+    } else if (stepData && stepData.status === 'processing') {
+      return renderProcessingState(processingMessage)
+    } else if (isStepUnlocked(stepNumber)) {
+      return renderReadyState(readyMessage, "This step will be implemented in the next phase")
+    } else {
+      return renderLockedState(lockedMessage)
+    }
+  }
+
   const renderAnalysisData = (stepData: ProjectStep) => {
     if (!stepData.raw_response) return null
 
@@ -529,33 +595,14 @@ export default function ProjectPage() {
                 const stepData = projectSteps.find(s => s.step_number === 1)
                 
                 if (stepData && stepData.status === 'completed') {
-
-                  
                   return (
                     <div>
-                      <div className="mb-4 p-3 bg-green-900/20 border border-green-700 rounded-lg">
-                        <div className="flex items-center justify-between text-green-400">
-                          <div className="flex items-center">
-                            <CheckCircle className="h-5 w-5 mr-2" />
-                            Analysis completed successfully
-                          </div>
-                          {typeof stepData.processing_cost === 'number' && (
-                            <div className="text-sm text-green-300">
-                              Cost: ${stepData.processing_cost.toFixed(4)}
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                      {renderSuccessBanner(stepData, "Analysis completed successfully")}
                       {renderAnalysisData(stepData)}
                     </div>
                   )
                 } else if (stepData && stepData.status === 'processing') {
-                  return (
-                    <div className="text-center py-8">
-                      <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto mb-4" />
-                      <p className="text-gray-400">Processing transcript analysis...</p>
-                    </div>
-                  )
+                  return renderProcessingState("Processing transcript analysis...")
                 } else {
                   return (
                     <div>
@@ -627,33 +674,13 @@ export default function ProjectPage() {
               <h2 className="text-xl font-semibold text-white mb-4">
                 Research
               </h2>
-              {(() => {
-                const stepData = projectSteps.find(s => s.step_number === 2)
-                
-                if (stepData && stepData.status === 'completed') {
-                  return renderAnalysisData(stepData)
-                } else if (stepData && stepData.status === 'processing') {
-                  return (
-                    <div className="text-center py-8">
-                      <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto mb-4" />
-                      <p className="text-gray-400">Processing research...</p>
-                    </div>
-                  )
-                } else if (isStepUnlocked(2)) {
-                  return (
-                    <div className="text-center py-8">
-                      <p className="text-gray-400 mb-4">Research step is ready to begin</p>
-                      <p className="text-gray-500 text-sm">This step will be implemented in the next phase</p>
-                    </div>
-                  )
-                } else {
-                  return (
-                    <div className="text-center py-8">
-                      <p className="text-gray-400">Complete transcript analysis first to unlock research step</p>
-                    </div>
-                  )
-                }
-              })()}
+              {renderStepContent(
+                2,
+                "Research completed successfully",
+                "Processing research...",
+                "Research step is ready to begin",
+                "Complete transcript analysis first to unlock research step"
+              )}
             </div>
           )}
 
@@ -662,33 +689,13 @@ export default function ProjectPage() {
               <h2 className="text-xl font-semibold text-white mb-4">
                 Script Outline
               </h2>
-              {(() => {
-                const stepData = projectSteps.find(s => s.step_number === 3)
-                
-                if (stepData && stepData.status === 'completed') {
-                  return renderAnalysisData(stepData)
-                } else if (stepData && stepData.status === 'processing') {
-                  return (
-                    <div className="text-center py-8">
-                      <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto mb-4" />
-                      <p className="text-gray-400">Generating script outline...</p>
-                    </div>
-                  )
-                } else if (isStepUnlocked(3)) {
-                  return (
-                    <div className="text-center py-8">
-                      <p className="text-gray-400 mb-4">Script outline generation is ready to begin</p>
-                      <p className="text-gray-500 text-sm">This step will be implemented in the next phase</p>
-                    </div>
-                  )
-                } else {
-                  return (
-                    <div className="text-center py-8">
-                      <p className="text-gray-400">Complete research step first to unlock script outline generation</p>
-                    </div>
-                  )
-                }
-              })()}
+              {renderStepContent(
+                3,
+                "Script outline completed successfully",
+                "Generating script outline...",
+                "Script outline generation is ready to begin",
+                "Complete research step first to unlock script outline generation"
+              )}
             </div>
           )}
         </div>
