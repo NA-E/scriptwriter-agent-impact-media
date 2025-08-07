@@ -212,8 +212,7 @@ export default function ProjectPage() {
         .upsert({
           project_id: projectId,
           step_number: 2,
-          status: 'processing',
-          created_by: user.id
+          status: 'processing'
         })
 
       if (error) {
