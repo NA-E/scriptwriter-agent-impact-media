@@ -107,21 +107,25 @@ export default function ProjectPage() {
     }
   }
 
-  const handleStartTranscriptAnalysis = async () => {
+  // Reusable function to call any workflow step webhook
+  const callWorkflowStep = async (
+    stepNumber: number, 
+    webhookPath: string, 
+    payload: Record<string, any>,
+    stepName: string,
+    setProcessingState: (state: boolean) => void,
+    switchTab?: string
+  ) => {
     if (!project || !user?.id) return
-    
-    setIsProcessing(true)
+
+    setProcessingState(true)
+    if (switchTab) setActiveTab(switchTab)
+
     try {
-      const response = await fetch('/api/webhook/transcript-analysis', {
+      const response = await fetch(webhookPath, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          'youtube-url': project.youtube_url,
-          'client-info': project.client_info || '',
-          'context': project.context,
-          'project-id': project.id,
-          'user-id': user.id
-        })
+        body: JSON.stringify(payload)
       })
 
       if (!response.ok) {
@@ -133,35 +137,54 @@ export default function ProjectPage() {
       if (result.success) {
         toast({
           title: "Processing Started",
-          description: "Transcript analysis has been initiated",
+          description: `${stepName} has been initiated`,
         })
         
         // Start polling for results
-        startPollingForResults()
+        startPollingForResults(stepNumber, stepName)
       } else {
         throw new Error(result.message || 'Webhook failed')
       }
       
     } catch (error: any) {
-      console.error('Error starting transcript analysis:', error)
+      console.error(`Error starting ${stepName}:`, error)
       toast({
         title: "Error",
-        description: error.message || "Failed to start transcript analysis",
+        description: error.message || `Failed to start ${stepName}`,
         variant: "destructive"
       })
     } finally {
-      setIsProcessing(false)
+      setProcessingState(false)
     }
   }
 
-  const startPollingForResults = () => {
+  const handleStartTranscriptAnalysis = async () => {
+    if (!project || !user?.id) return
+    
+    await callWorkflowStep(
+      1, 
+      '/api/webhook/transcript-analysis',
+      {
+        'youtube-url': project.youtube_url,
+        'client-info': project.client_info || '',
+        'context': project.context,
+        'project-id': project.id,
+        'user-id': user.id
+      },
+      'Transcript analysis',
+      setIsProcessing
+    )
+  }
+
+  // Reusable polling function for any workflow step
+  const startPollingForResults = (stepNumber: number, stepName: string) => {
     const pollInterval = setInterval(async () => {
       try {
         const { data: stepsData, error } = await supabase
           .from('project_steps')
           .select('*')
           .eq('project_id', projectId)
-          .eq('step_number', 1)
+          .eq('step_number', stepNumber)
           .eq('status', 'completed')
 
         if (error) {
@@ -172,10 +195,10 @@ export default function ProjectPage() {
         if (stepsData && stepsData.length > 0) {
           // Results found, update state and stop polling
           setProjectSteps(prev => {
-            const existing = prev.find(step => step.step_number === 1)
+            const existing = prev.find(step => step.step_number === stepNumber)
             if (existing) {
               return prev.map(step => 
-                step.step_number === 1 ? stepsData[0] : step
+                step.step_number === stepNumber ? stepsData[0] : step
               )
             } else {
               return [...prev, stepsData[0]]
@@ -184,8 +207,8 @@ export default function ProjectPage() {
           
           clearInterval(pollInterval)
           toast({
-            title: "Analysis Complete",
-            description: "Transcript analysis has been completed successfully",
+            title: `${stepName} Complete`,
+            description: `${stepName} has been completed successfully`,
           })
         }
       } catch (error) {
@@ -202,119 +225,20 @@ export default function ProjectPage() {
   const startResearchStep = async () => {
     if (!project || !user?.id) return
     
-    setIsResearchProcessing(true)
-    setActiveTab('research') // Switch to research tab
-    
-    try {
-      // Create or update research step as processing
-      const { error } = await supabase
-        .from('project_steps')
-        .upsert({
-          project_id: projectId,
-          step_number: 2,
-          status: 'processing'
-        })
-
-      if (error) {
-        throw error
-      }
-
-      // Call research webhook
-      const response = await fetch('/api/webhook/research', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          'project-id': project.id,
-          'user-id': user.id
-        })
-      })
-
-      if (!response.ok) {
-        throw new Error('Research webhook request failed')
-      }
-
-      const result = await response.json()
-      
-      if (result.success) {
-        toast({
-          title: "Research Started",
-          description: "Research step is now processing",
-        })
-        
-        // Start polling for results
-        startPollingForResearchResults()
-      } else {
-        throw new Error(result.message || 'Research webhook failed')
-      }
-
-      // Refresh project steps by refetching
-      const { data: updatedSteps } = await supabase
-        .from('project_steps')
-        .select('*')
-        .eq('project_id', projectId)
-        .order('step_number', { ascending: true })
-
-      if (updatedSteps) {
-        setProjectSteps(updatedSteps)
-      }
-
-    } catch (error: any) {
-      console.error('Error starting research:', error)
-      toast({
-        title: "Error",
-        description: error.message || "Failed to start research step",
-        variant: "destructive"
-      })
-      setIsResearchProcessing(false)
-    }
+    await callWorkflowStep(
+      2,
+      '/api/webhook/research', 
+      {
+        'project-id': project.id,
+        'user-id': user.id
+      },
+      'Research',
+      setIsResearchProcessing,
+      'research'
+    )
   }
 
-  const startPollingForResearchResults = () => {
-    const pollInterval = setInterval(async () => {
-      try {
-        const { data: stepsData, error } = await supabase
-          .from('project_steps')
-          .select('*')
-          .eq('project_id', projectId)
-          .eq('step_number', 2)
-          .eq('status', 'completed')
 
-        if (error) {
-          console.error('Error polling for research results:', error)
-          return
-        }
-
-        if (stepsData && stepsData.length > 0) {
-          // Results found, update state and stop polling
-          setProjectSteps(prev => {
-            const existing = prev.find(step => step.step_number === 2)
-            if (existing) {
-              return prev.map(step => 
-                step.step_number === 2 ? stepsData[0] : step
-              )
-            } else {
-              return [...prev, stepsData[0]]
-            }
-          })
-          
-          clearInterval(pollInterval)
-          setIsResearchProcessing(false)
-          toast({
-            title: "Research Complete",
-            description: "Research step has been completed successfully",
-          })
-        }
-      } catch (error) {
-        console.error('Error polling for research results:', error)
-      }
-    }, 3000) // Poll every 3 seconds
-
-    // Stop polling after 5 minutes
-    setTimeout(() => {
-      clearInterval(pollInterval)
-      setIsResearchProcessing(false)
-    }, 300000)
-  }
 
   const saveProjectChanges = async (updatedProject: Partial<Project>) => {
     if (!projectId || !user?.id) return

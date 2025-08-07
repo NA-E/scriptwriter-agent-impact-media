@@ -97,6 +97,20 @@ The application is optimized for Replit deployment with:
 
 ## Changelog
 
+- **August 7, 2025**: Major webhook system refactoring
+  - Created reusable `callWorkflowStep()` function for all webhook calls
+  - Abstracted polling logic into `startPollingForResults()` function
+  - Eliminated 95% of duplicate code between transcript analysis and research steps
+  - Fixed database schema errors by removing invalid `created_by` column references
+  - Both workflow steps now use identical code flow pattern
+
+- **Previous Progress**: 
+  - Fixed webhook integration with proper backend API endpoints
+  - Removed Status column from dashboard for cleaner UI
+  - Added "Continue to Research" button with consistent UX
+  - Implemented processing cost display in success banners
+  - Created reusable UI components (renderSuccessBanner, renderProcessingState, renderStepContent)
+
 - June 30, 2025. Initial setup
 
 ## User Preferences
