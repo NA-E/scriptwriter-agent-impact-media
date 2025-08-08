@@ -381,7 +381,6 @@ export default function ProjectPage() {
     if (!stepData.raw_response) return null
 
     try {
-      console.log('Raw response for step', stepData.step_number, ':', stepData.raw_response)
       const data = JSON.parse(stepData.raw_response)
 
       const renderValue = (value: any) => {
@@ -658,13 +657,25 @@ export default function ProjectPage() {
               <h2 className="text-xl font-semibold text-white mb-4">
                 Research
               </h2>
-              {renderStepContent(
-                2,
-                "Research completed successfully",
-                "Processing research...",
-                "Research step is ready to begin",
-                "Complete transcript analysis first to unlock research step"
-              )}
+              
+              {(() => {
+                const stepData = projectSteps.find(s => s.step_number === 2)
+                
+                if (stepData && stepData.status === 'completed') {
+                  return (
+                    <div>
+                      {renderSuccessBanner(stepData, "Research completed successfully")}
+                      {renderAnalysisData(stepData)}
+                    </div>
+                  )
+                } else if (stepData && stepData.status === 'processing') {
+                  return renderProcessingState("Processing research...")
+                } else if (isStepUnlocked(2)) {
+                  return renderReadyState("Research step is ready to begin", "This step will be implemented in the next phase")
+                } else {
+                  return renderLockedState("Complete transcript analysis first to unlock research step")
+                }
+              })()}
             </div>
           )}
 
