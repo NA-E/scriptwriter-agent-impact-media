@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog'
-import { LogOut, Box, User, ChevronDown, X, Loader2 } from 'lucide-react'
+import { LogOut, Box, User, ChevronDown, X, Loader2, Trash2 } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { supabase, type Database } from '@/lib/supabase'
 
@@ -23,6 +23,8 @@ export default function Dashboard() {
   })
   const [isLoading, setIsLoading] = useState(true)
   const [isCreating, setIsCreating] = useState(false)
+  const [projectToDelete, setProjectToDelete] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
   const handleSignOut = async () => {
@@ -129,6 +131,42 @@ export default function Dashboard() {
   const handleCancelProject = () => {
     setProjectForm({ name: '', clientName: '', youtubeUrl: '', context: '' })
     setIsNewProjectModalOpen(false)
+  }
+
+  const handleDeleteProject = async () => {
+    if (!projectToDelete || !user?.id) return
+
+    setIsDeleting(true)
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', projectToDelete)
+        .eq('created_by', user.id) // Ensure user can only delete their own projects
+
+      if (error) {
+        throw error
+      }
+
+      // Remove project from the list
+      setProjects(prev => prev.filter(p => p.id !== projectToDelete))
+
+      toast({
+        title: "Success",
+        description: "Project deleted successfully",
+      })
+      
+      setProjectToDelete(null)
+    } catch (error: any) {
+      console.error('Error deleting project:', error)
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete project",
+        variant: "destructive"
+      })
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   const fetchProjects = async () => {
@@ -320,12 +358,13 @@ export default function Dashboard() {
                       <th className="text-left px-6 py-3 text-sm font-medium text-gray-300">Client</th>
                       <th className="text-left px-6 py-3 text-sm font-medium text-gray-300">Date</th>
                       <th className="text-left px-6 py-3 text-sm font-medium text-gray-300">Progress</th>
+                      <th className="text-left px-6 py-3 text-sm font-medium text-gray-300">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-700">
                     {isLoading ? (
                       <tr>
-                        <td colSpan={4} className="px-6 py-12 text-center">
+                        <td colSpan={5} className="px-6 py-12 text-center">
                           <div className="flex items-center justify-center">
                             <Loader2 className="h-6 w-6 animate-spin text-gray-400 mr-2" />
                             <span className="text-gray-400">Loading projects...</span>
@@ -334,7 +373,7 @@ export default function Dashboard() {
                       </tr>
                     ) : projects.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="px-6 py-12 text-center">
+                        <td colSpan={5} className="px-6 py-12 text-center">
                           <div className="text-gray-400">
                             <p className="text-lg mb-2">No projects yet</p>
                             <p className="text-sm">Create your first project to get started</p>
@@ -378,6 +417,18 @@ export default function Dashboard() {
                               </div>
                               <span className="text-gray-400 text-sm">{project.current_step || 0}/3</span>
                             </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setProjectToDelete(project.id)
+                              }}
+                              className="text-red-400 hover:text-red-300 transition-colors p-1 rounded hover:bg-red-500/10"
+                              title="Delete project"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
                           </td>
                         </tr>
                       ))
@@ -486,6 +537,51 @@ export default function Dashboard() {
                 </>
               ) : (
                 'Create Project'
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={projectToDelete !== null} onOpenChange={() => setProjectToDelete(null)}>
+        <DialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">
+              Delete Project
+            </DialogTitle>
+            <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </DialogClose>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <p className="text-gray-600 dark:text-gray-300">
+              Are you sure you want to delete this project? This action cannot be undone and will permanently remove all project data including analysis results.
+            </p>
+          </div>
+
+          <div className="flex justify-end space-x-3 mt-6">
+            <Button
+              onClick={() => setProjectToDelete(null)}
+              variant="outline"
+              className="px-6 py-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteProject}
+              disabled={isDeleting}
+              className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete Project'
               )}
             </Button>
           </div>

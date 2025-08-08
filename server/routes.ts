@@ -75,6 +75,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete project endpoint
+  app.delete("/api/projects/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      if (!id) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Project ID is required" 
+        });
+      }
+
+      // For now, just return success (since we're using Supabase on frontend)
+      // The actual deletion will be handled by the frontend
+      res.json({ 
+        success: true, 
+        message: "Project deletion endpoint ready" 
+      });
+    } catch (error: any) {
+      console.error('Delete project error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: error.message || "Failed to delete project" 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
