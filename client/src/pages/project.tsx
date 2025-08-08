@@ -381,6 +381,7 @@ export default function ProjectPage() {
     if (!stepData.raw_response) return null
 
     try {
+      console.log('Raw response for step', stepData.step_number, ':', stepData.raw_response)
       const data = JSON.parse(stepData.raw_response)
 
       const renderValue = (value: any) => {
