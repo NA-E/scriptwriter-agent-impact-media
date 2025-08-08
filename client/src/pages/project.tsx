@@ -394,17 +394,15 @@ export default function ProjectPage() {
             </ul>
           )
         } else if (typeof value === 'object' && value !== null) {
-          // Handle objects (like nested key-value pairs)
+          // Handle objects (like nested key-value pairs) - render inline with colons
           return (
-            <div className="space-y-2 ml-4">
+            <div className="space-y-2 text-gray-300">
               {Object.entries(value).map(([subKey, subValue]) => (
-                <div key={subKey} className="space-y-1">
-                  <h4 className="font-medium text-gray-400 text-sm">
-                    {subKey.replace(/[-_]/g, ' ')}
-                  </h4>
-                  <div className="text-gray-300">
-                    {String(subValue)}
-                  </div>
+                <div key={subKey} className="">
+                  <span className="font-medium text-white">
+                    {subKey.charAt(0).toUpperCase() + subKey.slice(1).replace(/[-_]/g, ' ')}: 
+                  </span>
+                  <span>{String(subValue)}</span>
                 </div>
               ))}
             </div>
