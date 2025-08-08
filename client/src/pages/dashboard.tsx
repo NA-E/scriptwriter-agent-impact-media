@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog'
-import { LogOut, Box, User, ChevronDown, X, Loader2, Trash2 } from 'lucide-react'
+import { LogOut, Box, User, ChevronDown, X, Loader2, Trash2, ChevronUp } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { supabase, type Database } from '@/lib/supabase'
 
@@ -25,6 +25,8 @@ export default function Dashboard() {
   const [isCreating, setIsCreating] = useState(false)
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [sortBy, setSortBy] = useState<'title' | 'client_info' | 'updated_at' | 'current_step'>('updated_at')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const menuRef = useRef<HTMLDivElement>(null)
 
   const handleSignOut = async () => {
@@ -178,7 +180,7 @@ export default function Dashboard() {
         .from('projects')
         .select('*')
         .eq('created_by', user.id)
-        .order('created_at', { ascending: false })
+        .order(sortBy, { ascending: sortDirection === 'asc' })
 
       if (error) {
         throw error
@@ -219,6 +221,24 @@ export default function Dashboard() {
     return diffDays === 0 ? 'Today' : `${diffDays} days ago`
   }
 
+  const handleSort = (column: 'title' | 'client_info' | 'updated_at' | 'current_step') => {
+    if (sortBy === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(column)
+      setSortDirection('asc')
+    }
+  }
+
+  const getSortIcon = (column: string) => {
+    if (sortBy !== column) {
+      return <ChevronDown className="h-4 w-4 text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+    }
+    return sortDirection === 'asc' 
+      ? <ChevronUp className="h-4 w-4 text-blue-400" />
+      : <ChevronDown className="h-4 w-4 text-blue-400" />
+  }
+
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'draft':
@@ -245,12 +265,12 @@ export default function Dashboard() {
     }
   }
 
-  // Load projects when user is available
+  // Load projects when user is available or sorting changes
   useEffect(() => {
     if (user?.id) {
       fetchProjects()
     }
-  }, [user?.id])
+  }, [user?.id, sortBy, sortDirection])
 
 
 
@@ -354,10 +374,42 @@ export default function Dashboard() {
                 <table className="w-full">
                   <thead className="bg-gray-700/50 border-b border-gray-600">
                     <tr>
-                      <th className="text-left px-6 py-3 text-sm font-medium text-gray-300">Project Name</th>
-                      <th className="text-left px-6 py-3 text-sm font-medium text-gray-300">Client</th>
-                      <th className="text-left px-6 py-3 text-sm font-medium text-gray-300">Date</th>
-                      <th className="text-left px-6 py-3 text-sm font-medium text-gray-300">Progress</th>
+                      <th className="text-left px-6 py-3 text-sm font-medium text-gray-300">
+                        <button 
+                          onClick={() => handleSort('title')}
+                          className="group flex items-center space-x-1 hover:text-white transition-colors"
+                        >
+                          <span>Project Name</span>
+                          {getSortIcon('title')}
+                        </button>
+                      </th>
+                      <th className="text-left px-6 py-3 text-sm font-medium text-gray-300">
+                        <button 
+                          onClick={() => handleSort('client_info')}
+                          className="group flex items-center space-x-1 hover:text-white transition-colors"
+                        >
+                          <span>Client</span>
+                          {getSortIcon('client_info')}
+                        </button>
+                      </th>
+                      <th className="text-left px-6 py-3 text-sm font-medium text-gray-300">
+                        <button 
+                          onClick={() => handleSort('updated_at')}
+                          className="group flex items-center space-x-1 hover:text-white transition-colors"
+                        >
+                          <span>Last Update Date</span>
+                          {getSortIcon('updated_at')}
+                        </button>
+                      </th>
+                      <th className="text-left px-6 py-3 text-sm font-medium text-gray-300">
+                        <button 
+                          onClick={() => handleSort('current_step')}
+                          className="group flex items-center space-x-1 hover:text-white transition-colors"
+                        >
+                          <span>Progress</span>
+                          {getSortIcon('current_step')}
+                        </button>
+                      </th>
                       <th className="text-left px-6 py-3 text-sm font-medium text-gray-300">Actions</th>
                     </tr>
                   </thead>
@@ -404,8 +456,8 @@ export default function Dashboard() {
                           </td>
                           <td className="px-6 py-4 text-white">{project.client_info || 'N/A'}</td>
                           <td className="px-6 py-4">
-                            <div className="text-white">{formatDate(project.created_at)}</div>
-                            <div className="text-gray-400 text-sm">{getDaysAgo(project.created_at)}</div>
+                            <div className="text-white">{formatDate(project.updated_at)}</div>
+                            <div className="text-gray-400 text-sm">{getDaysAgo(project.updated_at)}</div>
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center">
