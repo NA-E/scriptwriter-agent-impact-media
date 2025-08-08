@@ -400,9 +400,9 @@ export default function ProjectPage() {
               {Object.entries(value).map(([subKey, subValue]) => (
                 <div key={subKey} className="">
                   <span className="font-medium text-white">
-                    {subKey.charAt(0).toUpperCase() + subKey.slice(1).replace(/[-_]/g, ' ')}: 
+                    {subKey.charAt(0).toUpperCase() + subKey.slice(1).replace(/[-_]/g, ' ')}:
                   </span>
-                  <span>{String(subValue)}</span>
+                  <span> {String(subValue)}</span>
                 </div>
               ))}
             </div>
