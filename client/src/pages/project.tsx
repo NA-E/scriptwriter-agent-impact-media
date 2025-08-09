@@ -5,6 +5,8 @@ import { ArrowLeft, ArrowRight, Play, CheckCircle, Circle, Clock, Loader2 } from
 import { useState, useEffect } from 'react'
 import { useParams, useLocation } from 'wouter'
 import { supabase, type Database } from '@/lib/supabase'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 type Project = Database['public']['Tables']['projects']['Row']
 type ProjectStep = {
@@ -400,10 +402,25 @@ export default function ProjectPage() {
     // For step 3 (outline), render as markdown
     if (stepData.step_number === 3) {
       return (
-        <div className="prose prose-invert max-w-none">
-          <div className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+        <div className="prose prose-invert max-w-none text-gray-300">
+          <ReactMarkdown 
+            remarkPlugins={[remarkGfm]}
+            components={{
+              h1: ({children}) => <h1 className="text-2xl font-bold text-white mb-4">{children}</h1>,
+              h2: ({children}) => <h2 className="text-xl font-semibold text-white mb-3">{children}</h2>,
+              h3: ({children}) => <h3 className="text-lg font-medium text-white mb-2">{children}</h3>,
+              p: ({children}) => <p className="text-gray-300 mb-3 leading-relaxed">{children}</p>,
+              ul: ({children}) => <ul className="list-disc list-inside mb-4 space-y-1">{children}</ul>,
+              ol: ({children}) => <ol className="list-decimal list-inside mb-4 space-y-1">{children}</ol>,
+              li: ({children}) => <li className="text-gray-300">{children}</li>,
+              strong: ({children}) => <strong className="font-semibold text-white">{children}</strong>,
+              em: ({children}) => <em className="italic text-gray-200">{children}</em>,
+              code: ({children}) => <code className="bg-gray-700 px-2 py-1 rounded text-gray-100 text-sm">{children}</code>,
+              blockquote: ({children}) => <blockquote className="border-l-4 border-blue-500 pl-4 my-4 text-gray-400 italic">{children}</blockquote>
+            }}
+          >
             {stepData.raw_response}
-          </div>
+          </ReactMarkdown>
         </div>
       )
     }
