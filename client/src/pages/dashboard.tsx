@@ -281,7 +281,7 @@ export default function Dashboard() {
       <div className="fixed inset-0 bg-gradient-radial from-white/10 via-transparent to-blue-500/10"></div>
       
       {/* Navigation */}
-      <nav className="relative z-10 px-6 py-4">
+      <nav className="relative z-50 px-6 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
@@ -301,7 +301,7 @@ export default function Dashboard() {
             </button>
             
             {isUserMenuOpen && (
-              <div className="absolute right-0 mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-[9999]">
+              <div className="fixed right-6 top-16 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-[99999]">
                 <div className="p-4 border-b border-gray-700">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
