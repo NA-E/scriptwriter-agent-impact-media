@@ -75,6 +75,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Webhook endpoint for outline generation
+  app.post("/api/webhook/outline-generation", async (req, res) => {
+    try {
+      const webhookUrl = process.env.OUTLINE_GENERATION_WEBHOOK_URL;
+      
+      if (!webhookUrl) {
+        return res.status(500).json({ 
+          success: false, 
+          message: "Outline generation webhook URL not configured" 
+        });
+      }
+
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req.body)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Outline generation webhook request failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+      res.json(result);
+    } catch (error: any) {
+      console.error('Outline generation webhook error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: error.message || "Outline generation webhook request failed" 
+      });
+    }
+  });
+
   // Delete project endpoint
   app.delete("/api/projects/:id", async (req, res) => {
     try {
