@@ -456,28 +456,7 @@ export default function ProjectPage() {
             </div>
           ))}
           
-          {/* Continue to Research button - only show if step 1 is completed and step 2 is not started */}
-          {stepData.step_number === 1 && isStepUnlocked(2) && !projectSteps.find(s => s.step_number === 2) && (
-            <div className="pt-4 border-t border-gray-700">
-              <Button 
-                onClick={startResearchStep}
-                disabled={isResearchProcessing}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                {isResearchProcessing ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Starting Research...
-                  </>
-                ) : (
-                  <>
-                    Continue to Research
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </>
-                )}
-              </Button>
-            </div>
-          )}
+
         </div>
       )
     } catch (error) {
@@ -697,7 +676,32 @@ export default function ProjectPage() {
                 } else if (stepData && stepData.status === 'processing') {
                   return renderProcessingState("Processing research...")
                 } else if (isStepUnlocked(2)) {
-                  return renderReadyState("Research step is ready to begin", "This step will be implemented in the next phase")
+                  return (
+                    <div>
+                      <div className="text-center py-8 mb-6">
+                        <p className="text-gray-400 mb-4">Ready to begin research phase</p>
+                        <p className="text-gray-500 text-sm">This will gather relevant information to enhance your script</p>
+                      </div>
+                      
+                      <Button
+                        onClick={startResearchStep}
+                        disabled={isResearchProcessing}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        {isResearchProcessing ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            Starting...
+                          </>
+                        ) : (
+                          <>
+                            <Play className="h-4 w-4 mr-2" />
+                            Start Research
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )
                 } else {
                   return renderLockedState("Complete transcript analysis first to unlock research step")
                 }
