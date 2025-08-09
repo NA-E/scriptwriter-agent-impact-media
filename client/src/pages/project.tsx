@@ -38,6 +38,7 @@ export default function ProjectPage() {
   const [currentStep, setCurrentStep] = useState(1)
   const [isProcessing, setIsProcessing] = useState(false)
   const [isResearchProcessing, setIsResearchProcessing] = useState(false)
+  const [isOutlineProcessing, setIsOutlineProcessing] = useState(false)
   const [activeTab, setActiveTab] = useState('transcript')
   const [isSaving, setIsSaving] = useState(false)
 
@@ -238,6 +239,22 @@ export default function ProjectPage() {
     )
   }
 
+  const startOutlineGeneration = async () => {
+    if (!project || !user?.id) return
+    
+    await callWorkflowStep(
+      3,
+      '/api/webhook/outline-generation',
+      {
+        'project-id': project.id,
+        'user-id': user.id
+      },
+      'Outline generation',
+      setIsOutlineProcessing,
+      'outline'
+    )
+  }
+
 
 
   const saveProjectChanges = async (updatedProject: Partial<Project>) => {
@@ -379,6 +396,17 @@ export default function ProjectPage() {
 
   const renderAnalysisData = (stepData: ProjectStep) => {
     if (!stepData.raw_response) return null
+
+    // For step 3 (outline), render as markdown
+    if (stepData.step_number === 3) {
+      return (
+        <div className="prose prose-invert max-w-none">
+          <div className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+            {stepData.raw_response}
+          </div>
+        </div>
+      )
+    }
 
     try {
       const data = JSON.parse(stepData.raw_response)
@@ -682,13 +710,50 @@ export default function ProjectPage() {
               <h2 className="text-xl font-semibold text-white mb-4">
                 Script Outline
               </h2>
-              {renderStepContent(
-                3,
-                "Script outline completed successfully",
-                "Generating script outline...",
-                "Script outline generation is ready to begin",
-                "Complete research step first to unlock script outline generation"
-              )}
+              
+              {(() => {
+                const stepData = projectSteps.find(s => s.step_number === 3)
+                
+                if (stepData && stepData.status === 'completed') {
+                  return (
+                    <div>
+                      {renderSuccessBanner(stepData, "Script outline completed successfully")}
+                      {renderAnalysisData(stepData)}
+                    </div>
+                  )
+                } else if (stepData && stepData.status === 'processing') {
+                  return renderProcessingState("Generating script outline...")
+                } else if (isStepUnlocked(3)) {
+                  return (
+                    <div>
+                      <div className="text-center py-8 mb-6">
+                        <p className="text-gray-400 mb-4">Ready to generate your script outline</p>
+                        <p className="text-gray-500 text-sm">This will create a structured outline based on your transcript analysis and research</p>
+                      </div>
+                      
+                      <Button
+                        onClick={startOutlineGeneration}
+                        disabled={isOutlineProcessing}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        {isOutlineProcessing ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            Generating...
+                          </>
+                        ) : (
+                          <>
+                            <Play className="h-4 w-4 mr-2" />
+                            Start Outline Generation
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )
+                } else {
+                  return renderLockedState("Complete research step first to unlock script outline generation")
+                }
+              })()}
             </div>
           )}
         </div>
