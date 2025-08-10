@@ -40,11 +40,8 @@ export default function AuthPage() {
     <div className="min-h-screen dark-world-bg text-white">
       {/* Header */}
       <header className="relative z-10 px-8 py-6">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="text-gray-300 font-medium tracking-wider text-sm">AI IMPACT MEDIA</div>
-          <button className="px-4 py-2 border border-gray-600 rounded-full text-sm text-gray-300 hover:text-white hover:border-gray-500 transition-colors">
-            Get in Touch
-          </button>
+        <div className="max-w-7xl mx-auto">
+          <div className="text-gray-300 font-medium tracking-wider text-sm">A IMPACT MEDIA</div>
         </div>
       </header>
 

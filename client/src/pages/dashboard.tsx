@@ -313,7 +313,7 @@ export default function Dashboard() {
             <div className="w-8 h-8 glass-card rounded-lg flex items-center justify-center">
               <Box className="text-gray-400 w-4 h-4" />
             </div>
-            <span className="text-lg font-medium tracking-wide text-gray-300">AI IMPACT MEDIA</span>
+            <span className="text-lg font-medium tracking-wide text-gray-300">A IMPACT MEDIA</span>
           </div>
           <div className="relative" ref={menuRef}>
             <button 

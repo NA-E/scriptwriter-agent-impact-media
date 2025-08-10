@@ -91,9 +91,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Request body:', JSON.stringify(req.body, null, 2));
 
       const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(req.body)
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
       });
 
       console.log('Outline generation response status:', response.status);
