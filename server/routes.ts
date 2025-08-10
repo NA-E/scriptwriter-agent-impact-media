@@ -87,17 +87,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      console.log('Outline generation webhook URL:', webhookUrl);
+      console.log('Request body:', JSON.stringify(req.body, null, 2));
+
       const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(req.body)
       });
 
+      console.log('Outline generation response status:', response.status);
+      console.log('Outline generation response headers:', Object.fromEntries(response.headers.entries()));
+
       if (!response.ok) {
-        throw new Error(`Outline generation webhook request failed: ${response.status}`);
+        const errorText = await response.text();
+        console.log('Outline generation error response:', errorText);
+        throw new Error(`Outline generation webhook request failed: ${response.status} - ${errorText}`);
       }
 
       const result = await response.json();
+      console.log('Outline generation success result:', result);
       res.json(result);
     } catch (error: any) {
       console.error('Outline generation webhook error:', error);
