@@ -72,6 +72,10 @@ export default function Dashboard() {
   }
 
   const handleCreateProject = async () => {
+    console.log('=== CREATE PROJECT DEBUG ===')
+    console.log('Form data:', projectForm)
+    console.log('User ID:', user?.id)
+
     if (!projectForm.name || !projectForm.clientName || !projectForm.youtubeUrl || !projectForm.context) {
       toast({
         title: "Error",
@@ -91,9 +95,15 @@ export default function Dashboard() {
     }
 
     setIsCreating(true)
+    console.log('Starting project creation...')
 
     try {
-      const { data, error } = await supabase
+      // Add timeout to prevent infinite hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Create project timeout after 15 seconds')), 15000)
+      )
+
+      const insertPromise = supabase
         .from('projects')
         .insert({
           title: projectForm.name,
@@ -107,9 +117,22 @@ export default function Dashboard() {
         .select()
         .single()
 
+      console.log('Executing Supabase insert...')
+      const { data, error } = await Promise.race([insertPromise, timeoutPromise]) as any
+
+      console.log('Insert result:', { data, error })
+
       if (error) {
+        console.error('Supabase error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        })
         throw error
       }
+
+      console.log('Project created successfully:', data)
 
       // Add new project to the list
       setProjects(prev => [data, ...prev])
@@ -130,6 +153,7 @@ export default function Dashboard() {
         variant: "destructive"
       })
     } finally {
+      console.log('Setting isCreating to false')
       setIsCreating(false)
     }
   }
