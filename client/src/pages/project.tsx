@@ -66,7 +66,6 @@ export default function ProjectPage() {
         .from('projects')
         .select('*')
         .eq('id', projectId)
-        .eq('created_by', user.id)
         .single()
 
       if (projectError) {
