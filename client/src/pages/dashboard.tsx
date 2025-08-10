@@ -27,6 +27,8 @@ export default function Dashboard() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [sortBy, setSortBy] = useState<'title' | 'client_info' | 'updated_at' | 'current_step'>('updated_at')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
   const menuRef = useRef<HTMLDivElement>(null)
 
   const handleSignOut = async () => {
@@ -172,15 +174,32 @@ export default function Dashboard() {
   }
 
   const fetchProjects = async () => {
-    if (!user?.id) return
-
     setIsLoading(true)
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('projects')
         .select('*')
-        .eq('created_by', user.id)
         .order(sortBy, { ascending: sortDirection === 'asc' })
+
+      // Apply search filter if search query exists
+      if (searchQuery.trim()) {
+        query = query.or(`title.ilike.%${searchQuery}%,client_info.ilike.%${searchQuery}%,youtube_url.ilike.%${searchQuery}%`)
+      }
+
+      // Apply status filter if not 'all'
+      if (statusFilter !== 'all') {
+        // Map display status to database values
+        const statusMap: Record<string, string> = {
+          'draft': 'draft',
+          'in_progress': 'in_progress', 
+          'completed': 'completed'
+        }
+        if (statusMap[statusFilter]) {
+          query = query.eq('status', statusMap[statusFilter])
+        }
+      }
+
+      const { data, error } = await query
 
       if (error) {
         throw error
@@ -265,12 +284,23 @@ export default function Dashboard() {
     }
   }
 
-  // Load projects when user is available or sorting changes
+  // Load projects on component mount
   useEffect(() => {
-    if (user?.id) {
+    fetchProjects()
+  }, [])
+
+  // Load projects when sorting or status filter changes
+  useEffect(() => {
+    fetchProjects()
+  }, [sortBy, sortDirection, statusFilter])
+
+  // Debounce search to avoid too many API calls
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
       fetchProjects()
-    }
-  }, [user?.id, sortBy, sortDirection])
+    }, 300)
+    return () => clearTimeout(timeoutId)
+  }, [searchQuery])
 
 
 
@@ -352,6 +382,8 @@ export default function Dashboard() {
                 <input
                   type="text"
                   placeholder="Search projects..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 pl-10 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -360,11 +392,15 @@ export default function Dashboard() {
                   </svg>
                 </div>
               </div>
-              <select className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option>All Status</option>
-                <option>Draft</option>
-                <option>In Progress</option>
-                <option>Completed</option>
+              <select 
+                value={statusFilter} 
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All Status</option>
+                <option value="draft">Draft</option>
+                <option value="in_progress">In Progress</option>
+                <option value="completed">Completed</option>
               </select>
             </div>
             
