@@ -197,6 +197,8 @@ export default function ProjectPage() {
 
         if (stepsData && stepsData.length > 0) {
           // Results found, update state and stop polling
+          console.log('Step data from database:', JSON.stringify(stepsData[0], null, 2))
+          console.log('Processing cost from database:', stepsData[0].processing_cost)
           setProjectSteps(prev => {
             const existing = prev.find(step => step.step_number === stepNumber)
             if (existing) {
@@ -338,9 +340,13 @@ export default function ProjectPage() {
           <CheckCircle className="h-5 w-5 mr-2" />
           {message}
         </div>
-        {typeof stepData.processing_cost === 'number' && (
+        {typeof stepData.processing_cost === 'number' ? (
           <div className="text-sm text-green-300">
             Cost: ${stepData.processing_cost.toFixed(4)}
+          </div>
+        ) : (
+          <div className="text-sm text-gray-400">
+            Cost: {stepData.processing_cost === null ? 'N/A' : String(stepData.processing_cost)}
           </div>
         )}
       </div>
