@@ -144,8 +144,12 @@ export default function Dashboard() {
       
       // Reset form and close modal
       setProjectForm({ name: '', clientName: '', youtubeUrl: '', context: '' })
-      setIsNewProjectModalOpen(false)
-      console.log('Modal closed and form reset')
+      
+      // Force modal close with slight delay to ensure state updates
+      setTimeout(() => {
+        setIsNewProjectModalOpen(false)
+        console.log('Modal closed and form reset')
+      }, 100)
     } catch (error: any) {
       console.error('Error creating project:', error)
       toast({
