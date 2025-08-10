@@ -55,6 +55,7 @@ export default function ProjectPage() {
     
     if (!projectId) {
       console.log('No project ID, redirecting to dashboard')
+      setIsLoading(false)
       setLocation('/dashboard')
       return
     }
@@ -66,6 +67,7 @@ export default function ProjectPage() {
 
     if (!user) {
       console.log('No user found, redirecting to auth')
+      setIsLoading(false)
       setLocation('/auth')
       return
     }
@@ -73,6 +75,9 @@ export default function ProjectPage() {
     if (user?.id) {
       console.log('User loaded, fetching project')
       fetchProject()
+    } else {
+      console.log('User exists but no user.id, setting loading to false')
+      setIsLoading(false)
     }
   }, [projectId, user?.id, authLoading])
 
