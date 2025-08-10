@@ -98,14 +98,29 @@ export default function Dashboard() {
     console.log('Starting project creation...')
 
     try {
-      // Test RLS policy first
-      console.log('Testing RLS policy with simple select...')
+      // Test Supabase client authentication
+      console.log('Testing Supabase client auth...')
+      const { data: authData, error: authError } = await supabase.auth.getUser()
+      console.log('Auth test result:', { authData, authError })
+
+      // Test basic connection with simple select
+      console.log('Testing basic Supabase connection...')
       const { data: testData, error: testError } = await supabase
         .from('projects')
         .select('id')
         .limit(1)
 
-      console.log('RLS test result:', { testData, testError })
+      console.log('Connection test result:', { testData, testError })
+
+      // Test if current user can read their own data
+      console.log('Testing user-specific query...')
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('id, email')
+        .eq('id', user.id)
+        .single()
+
+      console.log('User query result:', { userData, userError })
 
       // Add timeout to prevent infinite hanging
       const timeoutPromise = new Promise((_, reject) => 
