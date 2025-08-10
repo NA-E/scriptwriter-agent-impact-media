@@ -57,14 +57,28 @@ export default function ProjectPage() {
   }, [projectId, user?.id])
 
   const fetchProject = async () => {
-    if (!projectId || !user?.id) return
+    if (!projectId || !user?.id) {
+      console.log('Missing projectId or user.id:', { projectId, userId: user?.id })
+      return
+    }
 
     setIsLoading(true)
     console.log('Fetching project with ID:', projectId)
     console.log('Current user ID:', user.id)
+    console.log('Supabase client configured with URL:', import.meta.env.VITE_SUPABASE_URL)
     
     try {
+      // Test basic Supabase connection first
+      console.log('Testing Supabase connection...')
+      const { data: testData, error: testError } = await supabase
+        .from('projects')
+        .select('id')
+        .limit(1)
+
+      console.log('Connection test result:', { testData, testError })
+
       // Fetch project details
+      console.log('Now fetching specific project...')
       const { data: projectData, error: projectError } = await supabase
         .from('projects')
         .select('*')
@@ -74,7 +88,12 @@ export default function ProjectPage() {
       console.log('Project query result:', { projectData, projectError })
 
       if (projectError) {
-        console.error('Project fetch error:', projectError)
+        console.error('Project fetch error details:', {
+          message: projectError.message,
+          details: projectError.details,
+          hint: projectError.hint,
+          code: projectError.code
+        })
         throw projectError
       }
 
