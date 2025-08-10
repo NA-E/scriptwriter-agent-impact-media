@@ -75,6 +75,8 @@ export default function Dashboard() {
     console.log('=== CREATE PROJECT DEBUG ===')
     console.log('Form data:', projectForm)
     console.log('User ID:', user?.id)
+    console.log('Component state - isCreating:', isCreating)
+    console.log('Modal state - isNewProjectModalOpen:', isNewProjectModalOpen)
 
     if (!projectForm.name || !projectForm.clientName || !projectForm.youtubeUrl || !projectForm.context) {
       toast({
@@ -91,6 +93,12 @@ export default function Dashboard() {
         description: "You must be logged in to create a project",
         variant: "destructive"
       })
+      return
+    }
+
+    // Check if already creating to prevent double-click issues
+    if (isCreating) {
+      console.log('Already creating, ignoring duplicate request')
       return
     }
 
@@ -174,6 +182,7 @@ export default function Dashboard() {
       // Reset form and close modal
       setProjectForm({ name: '', clientName: '', youtubeUrl: '', context: '' })
       setIsNewProjectModalOpen(false)
+      console.log('Modal closed and form reset')
     } catch (error: any) {
       console.error('Error creating project:', error)
       toast({
@@ -186,6 +195,11 @@ export default function Dashboard() {
       setIsCreating(false)
     }
   }
+
+  // Add useEffect to monitor state changes
+  useEffect(() => {
+    console.log('Dashboard state changed - isCreating:', isCreating, 'modalOpen:', isNewProjectModalOpen)
+  }, [isCreating, isNewProjectModalOpen])
 
   const handleCancelProject = () => {
     setProjectForm({ name: '', clientName: '', youtubeUrl: '', context: '' })
