@@ -136,7 +136,6 @@ export default function Dashboard() {
       )
 
       const insertData = {
-        id: crypto.randomUUID(), // Explicitly provide UUID
         title: projectForm.name,
         youtube_url: projectForm.youtubeUrl,
         context: projectForm.context,
