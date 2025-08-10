@@ -116,7 +116,8 @@ export default function Dashboard() {
         created_by: user.id
       })
 
-      const { data, error } = await supabase
+      // Add timeout to prevent hanging
+      const insertPromise = supabase
         .from('projects')
         .insert({
           title: projectForm.name,
@@ -129,6 +130,13 @@ export default function Dashboard() {
         })
         .select()
         .single()
+
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Insert operation timed out after 10 seconds')), 10000)
+      )
+
+      console.log('Executing insert with timeout...')
+      const { data, error } = await Promise.race([insertPromise, timeoutPromise]) as any
 
       console.log('Insert result:', { data, error })
 
