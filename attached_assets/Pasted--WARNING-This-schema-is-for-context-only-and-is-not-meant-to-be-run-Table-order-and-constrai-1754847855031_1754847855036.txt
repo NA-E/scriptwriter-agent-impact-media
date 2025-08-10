@@ -1,0 +1,77 @@
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
+
+CREATE TABLE public.project_activity (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  project_id uuid,
+  user_id uuid,
+  action text NOT NULL,
+  step_number integer,
+  details jsonb,
+  created_at timestamp without time zone DEFAULT now(),
+  CONSTRAINT project_activity_pkey PRIMARY KEY (id),
+  CONSTRAINT project_activity_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id),
+  CONSTRAINT project_activity_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.project_steps (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  project_id uuid,
+  step_number integer NOT NULL,
+  step_name text NOT NULL,
+  status text NOT NULL DEFAULT 'pending'::text,
+  step_data jsonb,
+  raw_response text,
+  error_message text,
+  processing_time integer,
+  started_at timestamp without time zone,
+  completed_at timestamp without time zone,
+  updated_by uuid,
+  created_at timestamp without time zone DEFAULT now(),
+  updated_at timestamp without time zone DEFAULT now(),
+  processing_cost numeric DEFAULT 0.00000000,
+  CONSTRAINT project_steps_pkey PRIMARY KEY (id),
+  CONSTRAINT project_steps_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES public.users(id),
+  CONSTRAINT project_steps_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.projects(id)
+);
+CREATE TABLE public.projects (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  title text NOT NULL,
+  youtube_url text NOT NULL,
+  context text NOT NULL,
+  client_info text,
+  status text NOT NULL DEFAULT 'draft'::text,
+  current_step integer DEFAULT 0,
+  created_by uuid NOT NULL,
+  processing_started_at timestamp without time zone,
+  processing_completed_at timestamp without time zone,
+  total_processing_time integer,
+  created_at timestamp without time zone DEFAULT now(),
+  updated_at timestamp without time zone DEFAULT now(),
+  CONSTRAINT projects_pkey PRIMARY KEY (id),
+  CONSTRAINT projects_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id)
+);
+CREATE TABLE public.prompts (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL UNIQUE,
+  version text NOT NULL DEFAULT 'v1'::text,
+  system_prompt_text text,
+  user_prompt_text text NOT NULL,
+  model_provider text NOT NULL DEFAULT 'openrouter'::text,
+  model_name text NOT NULL DEFAULT 'anthropic/claude-3.7-sonnet:thinking'::text,
+  parameters jsonb DEFAULT '{"max_tokens": 4000, "temperature": 0.3}'::jsonb,
+  is_active boolean DEFAULT true,
+  created_at timestamp without time zone DEFAULT now(),
+  updated_at timestamp without time zone DEFAULT now(),
+  CONSTRAINT prompts_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.users (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  email text NOT NULL UNIQUE,
+  name text NOT NULL,
+  google_id text UNIQUE,
+  last_login timestamp without time zone,
+  is_active boolean DEFAULT true,
+  created_at timestamp without time zone DEFAULT now(),
+  updated_at timestamp without time zone DEFAULT now(),
+  CONSTRAINT users_pkey PRIMARY KEY (id)
+);

@@ -63,18 +63,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { error } = await supabase
         .from('users')
         .upsert({
-          id: user.id,
+          id: user.id, // Use Supabase auth UUID directly
           email: user.email!,
-          name: user.user_metadata?.full_name || user.email!,
-          google_id: user.user_metadata?.provider_id || null,
+          name: user.user_metadata?.full_name || user.user_metadata?.name || user.email!.split('@')[0],
+          google_id: user.user_metadata?.sub || user.user_metadata?.provider_id || null,
           last_login: new Date().toISOString(),
-          is_active: true
+          is_active: true,
+          updated_at: new Date().toISOString()
         }, {
           onConflict: 'id'
         })
 
       if (error) {
         console.error('Error upserting user:', error)
+      } else {
+        console.log('User successfully upserted:', user.email)
       }
     } catch (error) {
       console.error('Error upserting user:', error)
