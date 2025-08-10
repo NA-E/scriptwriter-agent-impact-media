@@ -63,42 +63,58 @@ export default function ProjectPage() {
     }
 
     setIsLoading(true)
-    console.log('Fetching project with ID:', projectId)
-    console.log('Current user ID:', user.id)
-    console.log('Supabase client configured with URL:', import.meta.env.VITE_SUPABASE_URL)
+    console.log('=== PROJECT FETCH DEBUG ===')
+    console.log('Project ID:', projectId)
+    console.log('User ID:', user.id)
+    console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL)
     
     try {
-      // Test basic Supabase connection first
-      console.log('Testing Supabase connection...')
-      const { data: testData, error: testError } = await supabase
+      // Add timeout to prevent infinite hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout after 10 seconds')), 10000)
+      )
+
+      // Test basic connection with timeout
+      console.log('Testing Supabase connection with timeout...')
+      const connectionTest = supabase
         .from('projects')
         .select('id')
         .limit(1)
 
+      const { data: testData, error: testError } = await Promise.race([
+        connectionTest,
+        timeoutPromise
+      ]) as any
+
       console.log('Connection test result:', { testData, testError })
 
-      // Fetch project details
-      console.log('Now fetching specific project...')
-      const { data: projectData, error: projectError } = await supabase
+      if (testError) {
+        console.error('Connection test failed:', testError)
+        throw new Error(`Connection failed: ${testError.message}`)
+      }
+
+      // If connection works, fetch the specific project
+      console.log('Connection successful, fetching project...')
+      const projectQuery = supabase
         .from('projects')
         .select('*')
         .eq('id', projectId)
         .single()
 
-      console.log('Project query result:', { projectData, projectError })
+      const { data: projectData, error: projectError } = await Promise.race([
+        projectQuery,
+        timeoutPromise
+      ]) as any
+
+      console.log('Project query complete:', { projectData, projectError })
 
       if (projectError) {
-        console.error('Project fetch error details:', {
-          message: projectError.message,
-          details: projectError.details,
-          hint: projectError.hint,
-          code: projectError.code
-        })
+        console.error('Project fetch error:', projectError)
         throw projectError
       }
 
       if (!projectData) {
-        console.log('No project data returned')
+        console.log('No project found with ID:', projectId)
         toast({
           title: "Error",
           description: "Project not found",
