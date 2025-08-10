@@ -28,7 +28,7 @@ type ProjectStep = {
 }
 
 export default function ProjectPage() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const { toast } = useToast()
   const [, setLocation] = useLocation()
   const params = useParams()
@@ -51,10 +51,30 @@ export default function ProjectPage() {
   ]
 
   useEffect(() => {
-    if (projectId && user?.id) {
+    console.log('Effect triggered:', { projectId, userId: user?.id, authLoading })
+    
+    if (!projectId) {
+      console.log('No project ID, redirecting to dashboard')
+      setLocation('/dashboard')
+      return
+    }
+
+    if (authLoading) {
+      console.log('Auth still loading, waiting...')
+      return
+    }
+
+    if (!user) {
+      console.log('No user found, redirecting to auth')
+      setLocation('/auth')
+      return
+    }
+
+    if (user?.id) {
+      console.log('User loaded, fetching project')
       fetchProject()
     }
-  }, [projectId, user?.id])
+  }, [projectId, user?.id, authLoading])
 
   const fetchProject = async () => {
     if (!projectId || !user?.id) {
