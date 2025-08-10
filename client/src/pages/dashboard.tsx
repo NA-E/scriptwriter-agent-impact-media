@@ -98,22 +98,36 @@ export default function Dashboard() {
     console.log('Starting project creation...')
 
     try {
+      // Test RLS policy first
+      console.log('Testing RLS policy with simple select...')
+      const { data: testData, error: testError } = await supabase
+        .from('projects')
+        .select('id')
+        .limit(1)
+
+      console.log('RLS test result:', { testData, testError })
+
       // Add timeout to prevent infinite hanging
       const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Create project timeout after 15 seconds')), 15000)
       )
 
+      const insertData = {
+        id: crypto.randomUUID(), // Explicitly provide UUID
+        title: projectForm.name,
+        youtube_url: projectForm.youtubeUrl,
+        context: projectForm.context,
+        client_info: projectForm.clientName,
+        status: 'draft',
+        current_step: 0,
+        created_by: user.id
+      }
+
+      console.log('Insert data:', insertData)
+
       const insertPromise = supabase
         .from('projects')
-        .insert({
-          title: projectForm.name,
-          youtube_url: projectForm.youtubeUrl,
-          context: projectForm.context,
-          client_info: projectForm.clientName,
-          status: 'draft',
-          current_step: 0,
-          created_by: user.id
-        })
+        .insert(insertData)
         .select()
         .single()
 
