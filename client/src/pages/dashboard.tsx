@@ -8,10 +8,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@
 import { LogOut, Box, User, ChevronDown, X, Loader2, Trash2, ChevronUp } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { supabase, type Database } from '@/lib/supabase'
+import { useLocation } from 'wouter'
 
 export default function Dashboard() {
   const { user, signOut } = useAuth()
   const { toast } = useToast()
+  const [, setLocation] = useLocation()
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false)
   const [projects, setProjects] = useState<Database['public']['Tables']['projects']['Row'][]>([])
@@ -469,7 +471,7 @@ export default function Dashboard() {
                         <tr 
                           key={project.id} 
                           className="hover:bg-gray-700/30 cursor-pointer"
-                          onClick={() => window.location.href = `/project/${project.id}`}
+                          onClick={() => setLocation(`/project/${project.id}`)}
                         >
                           <td className="px-6 py-4">
                             <div className="flex items-center">
