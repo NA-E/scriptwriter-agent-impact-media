@@ -30,20 +30,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setUser(session?.user ?? null)
+      
+      // Insert user into users table if they don't exist
+      if (session?.user) {
+        handleUserUpsert(session.user)
+      }
+      
       setLoading(false)
     })
 
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
+      
+      // Insert user into users table if they don't exist
+      if (session?.user) {
+        await handleUserUpsert(session.user)
+      }
+      
       setLoading(false)
     })
 
     return () => subscription.unsubscribe()
   }, [])
+
+  // Function to insert or update user in users table
+  const handleUserUpsert = async (user: User) => {
+    try {
+      const { error } = await supabase
+        .from('users')
+        .upsert({
+          id: user.id,
+          email: user.email!,
+          name: user.user_metadata?.full_name || user.email!,
+          google_id: user.user_metadata?.provider_id || null,
+          last_login: new Date().toISOString(),
+          is_active: true
+        }, {
+          onConflict: 'id'
+        })
+
+      if (error) {
+        console.error('Error upserting user:', error)
+      }
+    } catch (error) {
+      console.error('Error upserting user:', error)
+    }
+  }
 
   const signInWithGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
