@@ -305,10 +305,21 @@ export default function Dashboard() {
 
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Background Pattern */}
-      <div className="fixed inset-0 bg-gradient-to-br from-black via-gray-900 to-black opacity-50"></div>
-      <div className="fixed inset-0 bg-gradient-radial from-white/10 via-transparent to-blue-500/10"></div>
+    <div className="min-h-screen bg-black text-white overflow-hidden">
+      {/* Animated Background Layers */}
+      <div className="fixed inset-0 bg-animated-gradient"></div>
+      <div className="fixed inset-0 grid-pattern"></div>
+      <div className="fixed inset-0 mesh-gradient"></div>
+      
+      {/* Floating Orbs */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="floating-orb"></div>
+        <div className="floating-orb"></div>
+        <div className="floating-orb"></div>
+      </div>
+      
+      {/* Gradient Overlay */}
+      <div className="fixed inset-0 bg-gradient-to-br from-black/20 via-transparent to-black/40"></div>
       
       {/* Navigation */}
       <nav className="relative z-50 px-6 py-4">
@@ -363,28 +374,28 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto">
           {/* Projects Section */}
           <div className="mb-8">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center mb-6 animate-fade-in">
               <div>
-                <h1 className="text-3xl font-bold text-white mb-2">Projects</h1>
+                <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">Projects</h1>
                 <p className="text-gray-400">Manage your YouTube scriptwriting projects</p>
               </div>
               <Button 
                 onClick={() => setIsNewProjectModalOpen(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-blue-600 hover:bg-blue-700 text-white hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25"
               >
                 + New Project
               </Button>
             </div>
             
             {/* Search and Filter */}
-            <div className="flex gap-4 mb-6">
+            <div className="flex gap-4 mb-6 animate-slide-up">
               <div className="flex-1 relative">
                 <input
                   type="text"
                   placeholder="Search projects..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 pl-10 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-lg px-4 py-2 pl-10 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-800/70 transition-all duration-300"
                 />
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -395,7 +406,7 @@ export default function Dashboard() {
               <select 
                 value={statusFilter} 
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-800/70 transition-all duration-300"
               >
                 <option value="all">All Status</option>
                 <option value="draft">Draft</option>
@@ -405,7 +416,7 @@ export default function Dashboard() {
             </div>
             
             {/* Projects Table */}
-            <div className="bg-gray-800/50 rounded-lg border border-gray-700 overflow-hidden">
+            <div className="bg-gray-800/30 backdrop-blur-sm rounded-lg border border-gray-700/50 overflow-hidden animate-slide-up hover:bg-gray-800/40 transition-all duration-300">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-gray-700/50 border-b border-gray-600">
