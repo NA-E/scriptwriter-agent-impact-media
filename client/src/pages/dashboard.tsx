@@ -106,55 +106,19 @@ export default function Dashboard() {
     console.log('Starting project creation...')
 
     try {
-      // Test Supabase client authentication
-      console.log('Testing Supabase client auth...')
-      const { data: authData, error: authError } = await supabase.auth.getUser()
-      console.log('Auth test result:', { authData, authError })
-
-      // Test basic connection with simple select
-      console.log('Testing basic Supabase connection...')
-      const { data: testData, error: testError } = await supabase
+      const { data, error } = await supabase
         .from('projects')
-        .select('id')
-        .limit(1)
-
-      console.log('Connection test result:', { testData, testError })
-
-      // Test if current user can read their own data
-      console.log('Testing user-specific query...')
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('id, email')
-        .eq('id', user.id)
-        .single()
-
-      console.log('User query result:', { userData, userError })
-
-      // Add timeout to prevent infinite hanging
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Create project timeout after 15 seconds')), 15000)
-      )
-
-      const insertData = {
-        title: projectForm.name,
-        youtube_url: projectForm.youtubeUrl,
-        context: projectForm.context,
-        client_info: projectForm.clientName,
-        status: 'draft',
-        current_step: 0,
-        created_by: user.id
-      }
-
-      console.log('Insert data:', insertData)
-
-      const insertPromise = supabase
-        .from('projects')
-        .insert(insertData)
+        .insert({
+          title: projectForm.name,
+          youtube_url: projectForm.youtubeUrl,
+          context: projectForm.context,
+          client_info: projectForm.clientName,
+          status: 'draft',
+          current_step: 0,
+          created_by: user.id
+        })
         .select()
         .single()
-
-      console.log('Executing Supabase insert...')
-      const { data, error } = await Promise.race([insertPromise, timeoutPromise]) as any
 
       console.log('Insert result:', { data, error })
 
