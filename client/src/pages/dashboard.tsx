@@ -106,6 +106,16 @@ export default function Dashboard() {
     console.log('Starting project creation...')
 
     try {
+      console.log('About to insert project with data:', {
+        title: projectForm.name,
+        youtube_url: projectForm.youtubeUrl,
+        context: projectForm.context,
+        client_info: projectForm.clientName,
+        status: 'draft',
+        current_step: 0,
+        created_by: user.id
+      })
+
       const { data, error } = await supabase
         .from('projects')
         .insert({
