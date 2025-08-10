@@ -132,7 +132,7 @@ export default function ProjectPage() {
       })
 
       if (!response.ok) {
-        throw new Error('Webhook request failed')
+        throw new Error(`Webhook request failed with status ${response.status}`)
       }
 
       const result = await response.json()
@@ -151,9 +151,20 @@ export default function ProjectPage() {
       
     } catch (error: any) {
       console.error(`Error starting ${stepName}:`, error)
+      
+      // Show specific error message for different failure types
+      let errorMessage = `Failed to start ${stepName}`
+      if (error.message.includes('524')) {
+        errorMessage = `${stepName} service is currently unavailable. Please try again later.`
+      } else if (error.message.includes('timeout')) {
+        errorMessage = `${stepName} request timed out. Please try again.`
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+      
       toast({
         title: "Error",
-        description: error.message || `Failed to start ${stepName}`,
+        description: errorMessage,
         variant: "destructive"
       })
     } finally {
