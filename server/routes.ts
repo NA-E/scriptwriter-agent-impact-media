@@ -56,11 +56,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Set 5 minute timeout for research webhook
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutes
+
+      console.log('Research webhook URL:', webhookUrl);
+      console.log('Request body:', JSON.stringify(req.body, null, 2));
+      console.log('Making POST request with 5 minute timeout...');
+
       const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(req.body)
+        body: JSON.stringify(req.body),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
+      console.log('Research webhook response status:', response.status);
 
       if (!response.ok) {
         throw new Error(`Research webhook request failed: ${response.status}`);

@@ -407,7 +407,66 @@ export default function ProjectPage() {
     } else if (stepData && stepData.status === 'processing') {
       return renderProcessingState(processingMessage)
     } else if (isStepUnlocked(stepNumber)) {
-      return renderReadyState(readyMessage, "This step will be implemented in the next phase")
+      // Step 2 (Research) specific handling
+      if (stepNumber === 2) {
+        return (
+          <div>
+            <div className="text-center py-8 mb-6">
+              <p className="text-gray-400 mb-4">{readyMessage}</p>
+            </div>
+            
+            <Button
+              onClick={startResearchStep}
+              disabled={isResearchProcessing}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {isResearchProcessing ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Starting...
+                </>
+              ) : (
+                <>
+                  <Play className="h-4 w-4 mr-2" />
+                  Start Research
+                </>
+              )}
+            </Button>
+          </div>
+        )
+      }
+      // Step 3 (Outline) specific handling  
+      else if (stepNumber === 3) {
+        return (
+          <div>
+            <div className="text-center py-8 mb-6">
+              <p className="text-gray-400 mb-4">{readyMessage}</p>
+            </div>
+            
+            <Button
+              onClick={startOutlineGeneration}
+              disabled={isOutlineProcessing}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {isOutlineProcessing ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Starting...
+                </>
+              ) : (
+                <>
+                  <Play className="h-4 w-4 mr-2" />
+                  Start Outline Generation
+                </>
+              )}
+            </Button>
+          </div>
+        )
+      }
+      // Default ready state for other steps
+      else {
+        return renderReadyState(readyMessage, "This step will be implemented in the next phase")
+      }
     } else {
       return renderLockedState(lockedMessage)
     }
@@ -697,49 +756,13 @@ export default function ProjectPage() {
                 Research
               </h2>
               
-              {(() => {
-                const stepData = projectSteps.find(s => s.step_number === 2)
-                
-                if (stepData && stepData.status === 'completed') {
-                  return (
-                    <div>
-                      {renderSuccessBanner(stepData, "Research completed successfully")}
-                      {renderAnalysisData(stepData)}
-                    </div>
-                  )
-                } else if (stepData && stepData.status === 'processing') {
-                  return renderProcessingState("Processing research...")
-                } else if (isStepUnlocked(2)) {
-                  return (
-                    <div>
-                      <div className="text-center py-8 mb-6">
-                        <p className="text-gray-400 mb-4">Ready to begin research phase</p>
-                        <p className="text-gray-500 text-sm">This will gather relevant information to enhance your script</p>
-                      </div>
-                      
-                      <Button
-                        onClick={startResearchStep}
-                        disabled={isResearchProcessing}
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                      >
-                        {isResearchProcessing ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                            Starting...
-                          </>
-                        ) : (
-                          <>
-                            <Play className="h-4 w-4 mr-2" />
-                            Start Research
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  )
-                } else {
-                  return renderLockedState("Complete transcript analysis first to unlock research step")
-                }
-              })()}
+              {renderStepContent(
+                2,
+                "Research completed successfully",
+                "Processing research...",
+                "Ready to begin research phase. This will gather relevant information to enhance your script.",
+                "Complete transcript analysis first to unlock research step"
+              )}
             </div>
           )}
 
@@ -749,49 +772,13 @@ export default function ProjectPage() {
                 Script Outline
               </h2>
               
-              {(() => {
-                const stepData = projectSteps.find(s => s.step_number === 3)
-                
-                if (stepData && stepData.status === 'completed') {
-                  return (
-                    <div>
-                      {renderSuccessBanner(stepData, "Script outline completed successfully")}
-                      {renderAnalysisData(stepData)}
-                    </div>
-                  )
-                } else if (stepData && stepData.status === 'processing') {
-                  return renderProcessingState("Generating script outline...")
-                } else if (isStepUnlocked(3)) {
-                  return (
-                    <div>
-                      <div className="text-center py-8 mb-6">
-                        <p className="text-gray-400 mb-4">Ready to generate your script outline</p>
-                        <p className="text-gray-500 text-sm">This will create a structured outline based on your transcript analysis and research</p>
-                      </div>
-                      
-                      <Button
-                        onClick={startOutlineGeneration}
-                        disabled={isOutlineProcessing}
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                      >
-                        {isOutlineProcessing ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                            Generating...
-                          </>
-                        ) : (
-                          <>
-                            <Play className="h-4 w-4 mr-2" />
-                            Start Outline Generation
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  )
-                } else {
-                  return renderLockedState("Complete research step first to unlock script outline generation")
-                }
-              })()}
+              {renderStepContent(
+                3,
+                "Script outline completed successfully",
+                "Generating script outline...",
+                "Ready to generate your script outline. This will create a structured outline based on your transcript analysis and research.",
+                "Complete research first to unlock outline generation step"
+              )}
             </div>
           )}
         </div>
