@@ -76,8 +76,8 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
-                radial-gradient(circle at 80% 50%, rgba(59, 130, 246, 0.02) 0%, transparent 50%);
+    background: radial-gradient(circle at 20% 50%, rgba(156, 163, 175, 0.02) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(156, 163, 175, 0.01) 0%, transparent 50%);
   }
   
   .blue-accent-line {
@@ -91,7 +91,7 @@
     top: 50%;
     width: 60px;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.8), transparent);
+    background: linear-gradient(90deg, transparent, rgba(156, 163, 175, 0.6), transparent);
   }
   
   .blue-accent-line::before {
@@ -109,7 +109,7 @@
   
   .blue-cross::before {
     content: '+';
-    color: rgba(59, 130, 246, 0.6);
+    color: rgba(156, 163, 175, 0.4);
     font-size: 16px;
     font-weight: 300;
   }

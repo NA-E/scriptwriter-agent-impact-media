@@ -41,7 +41,7 @@ export default function AuthPage() {
       {/* Header */}
       <header className="relative z-10 px-8 py-6">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="text-white font-medium tracking-wider text-sm">SCRIPTWRITER</div>
+          <div className="text-gray-300 font-medium tracking-wider text-sm">AI IMPACT MEDIA</div>
           <button className="px-4 py-2 border border-gray-600 rounded-full text-sm text-gray-300 hover:text-white hover:border-gray-500 transition-colors">
             Get in Touch
           </button>
@@ -57,14 +57,11 @@ export default function AuthPage() {
             <div className="blue-cross"></div>
           </div>
           
-          {/* Welcome text */}
-          <div className="mb-8">
-            <p className="text-gray-400 text-lg tracking-wide mb-4 animate-fade-in">Welcome to</p>
-          </div>
-          
           {/* Title */}
-          <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold mb-12 leading-tight blue-accent-line animate-slide-up">
-            SCRIPT WRITER
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-12 leading-tight blue-accent-line animate-slide-up">
+            <span className="text-gray-300">YOUTUBE</span><br />
+            <span className="text-white">SCRIPT WRITER</span><br />
+            <span className="text-gray-400">AGENT</span>
           </h1>
           
           {/* Description */}
@@ -79,7 +76,7 @@ export default function AuthPage() {
             <Button 
               onClick={handleGoogleSignIn}
               disabled={loading}
-              className="glass-card hover:bg-white/5 text-white font-medium py-4 px-8 rounded-full transition-all duration-300 inline-flex items-center justify-center space-x-3 hover:border-blue-500/30"
+              className="glass-card hover:bg-white/5 text-gray-300 hover:text-white font-medium py-4 px-8 rounded-full transition-all duration-300 inline-flex items-center justify-center space-x-3 hover:border-gray-500/30"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -95,20 +92,20 @@ export default function AuthPage() {
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             <div className="text-center p-8 glass-card rounded-2xl hover:bg-white/5 transition-all duration-300">
               <div className="mb-6">
-                <Edit className="w-10 h-10 mx-auto text-blue-400" />
+                <Edit className="w-10 h-10 mx-auto text-gray-400" />
               </div>
-              <h3 className="text-xl font-medium mb-3 text-white">Create Scripts</h3>
-              <p className="text-gray-400 text-sm leading-relaxed">
+              <h3 className="text-xl font-medium mb-3 text-gray-300">Create Scripts</h3>
+              <p className="text-gray-500 text-sm leading-relaxed">
                 Generate engaging YouTube scripts with AI assistance
               </p>
             </div>
             
             <div className="text-center p-8 glass-card rounded-2xl hover:bg-white/5 transition-all duration-300">
               <div className="mb-6">
-                <BarChart3 className="w-10 h-10 mx-auto text-blue-400" />
+                <BarChart3 className="w-10 h-10 mx-auto text-gray-400" />
               </div>
-              <h3 className="text-xl font-medium mb-3 text-white">Manage Projects</h3>
-              <p className="text-gray-400 text-sm leading-relaxed">
+              <h3 className="text-xl font-medium mb-3 text-gray-300">Manage Projects</h3>
+              <p className="text-gray-500 text-sm leading-relaxed">
                 Keep all your YouTube content organized in one place
               </p>
             </div>

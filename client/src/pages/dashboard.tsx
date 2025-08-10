@@ -311,9 +311,9 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 glass-card rounded-lg flex items-center justify-center">
-              <Box className="text-blue-400 w-4 h-4" />
+              <Box className="text-gray-400 w-4 h-4" />
             </div>
-            <span className="text-lg font-medium tracking-wide">SCRIPTWRITER AGENT</span>
+            <span className="text-lg font-medium tracking-wide text-gray-300">AI IMPACT MEDIA</span>
           </div>
           <div className="relative" ref={menuRef}>
             <button 
