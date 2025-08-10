@@ -60,6 +60,9 @@ export default function ProjectPage() {
     if (!projectId || !user?.id) return
 
     setIsLoading(true)
+    console.log('Fetching project with ID:', projectId)
+    console.log('Current user ID:', user.id)
+    
     try {
       // Fetch project details
       const { data: projectData, error: projectError } = await supabase
@@ -68,11 +71,15 @@ export default function ProjectPage() {
         .eq('id', projectId)
         .single()
 
+      console.log('Project query result:', { projectData, projectError })
+
       if (projectError) {
+        console.error('Project fetch error:', projectError)
         throw projectError
       }
 
       if (!projectData) {
+        console.log('No project data returned')
         toast({
           title: "Error",
           description: "Project not found",
