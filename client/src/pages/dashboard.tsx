@@ -305,19 +305,15 @@ export default function Dashboard() {
 
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Clean Background */}
-      <div className="fixed inset-0 bg-clean-gradient"></div>
-      <div className="fixed inset-0 subtle-grid"></div>
-      
+    <div className="min-h-screen dark-world-bg text-white">
       {/* Navigation */}
-      <nav className="relative z-50 px-6 py-4">
+      <nav className="relative z-50 px-8 py-6">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-              <Box className="text-black w-4 h-4" />
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 glass-card rounded-lg flex items-center justify-center">
+              <Box className="text-blue-400 w-4 h-4" />
             </div>
-            <span className="text-xl font-semibold">YouTube ScriptWriter Agent</span>
+            <span className="text-lg font-medium tracking-wide">SCRIPTWRITER AGENT</span>
           </div>
           <div className="relative" ref={menuRef}>
             <button 
@@ -363,30 +359,30 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto">
           {/* Projects Section */}
           <div className="mb-8">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center mb-8">
               <div>
-                <h1 className="text-3xl font-bold mb-2 text-white">Projects</h1>
+                <h1 className="text-4xl font-bold mb-3 text-white tracking-wide">PROJECTS</h1>
                 <p className="text-gray-400">Manage your YouTube scriptwriting projects</p>
               </div>
               <Button 
                 onClick={() => setIsNewProjectModalOpen(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="glass-card hover:bg-white/5 text-white px-6 py-3 rounded-full border-blue-500/30 hover:border-blue-400/50 transition-all duration-300"
               >
                 + New Project
               </Button>
             </div>
             
             {/* Search and Filter */}
-            <div className="flex gap-4 mb-6">
+            <div className="flex gap-4 mb-8">
               <div className="flex-1 relative">
                 <input
                   type="text"
                   placeholder="Search projects..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 pl-10 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full glass-card rounded-xl px-4 py-3 pl-12 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500/50 transition-all duration-300"
                 />
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
@@ -395,7 +391,7 @@ export default function Dashboard() {
               <select 
                 value={statusFilter} 
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="glass-card rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 transition-all duration-300"
               >
                 <option value="all">All Status</option>
                 <option value="draft">Draft</option>
@@ -405,7 +401,7 @@ export default function Dashboard() {
             </div>
             
             {/* Projects Table */}
-            <div className="bg-gray-900/50 rounded-lg border border-gray-800 overflow-hidden">
+            <div className="glass-card rounded-2xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-gray-700/50 border-b border-gray-600">

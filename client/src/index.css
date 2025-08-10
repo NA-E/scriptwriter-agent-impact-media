@@ -64,27 +64,68 @@
                 radial-gradient(circle at 75% 75%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
   }
   
-  .bg-clean-gradient {
-    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%);
+  .dark-world-bg {
+    background: #0a0a0a;
+    position: relative;
+  }
+  
+  .dark-world-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(59, 130, 246, 0.02) 0%, transparent 50%);
+  }
+  
+  .blue-accent-line {
+    position: relative;
+  }
+  
+  .blue-accent-line::before,
+  .blue-accent-line::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.8), transparent);
+  }
+  
+  .blue-accent-line::before {
+    left: -80px;
+  }
+  
+  .blue-accent-line::after {
+    right: -80px;
+  }
+  
+  .blue-cross {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .blue-cross::before {
+    content: '+';
+    color: rgba(59, 130, 246, 0.6);
+    font-size: 16px;
+    font-weight: 300;
   }
   
   .animate-fade-in {
-    animation: fadeIn 0.5s ease-in-out;
+    animation: fadeIn 0.8s ease-out;
   }
   
   .animate-slide-up {
-    animation: slideUp 0.4s ease-out;
+    animation: slideUp 0.6s ease-out;
   }
   
-  .animate-pulse-slow {
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-  
-  .subtle-grid {
-    background-image: 
-      linear-gradient(rgba(255, 255, 255, 0.01) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.01) 1px, transparent 1px);
-    background-size: 80px 80px;
+  .glass-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
   }
 }
 
