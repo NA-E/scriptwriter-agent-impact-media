@@ -811,7 +811,7 @@ export default function ProjectPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen dark-world-bg text-white flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
         <div className="text-white">Loading project...</div>
       </div>
     );
@@ -819,14 +819,14 @@ export default function ProjectPage() {
 
   if (!project) {
     return (
-      <div className="min-h-screen dark-world-bg text-white flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
         <div className="text-white">Project not found</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen dark-world-bg text-white">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       {/* Header */}
       <div className="relative z-10 border-b border-gray-800 bg-gray-900/50 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto px-6 py-6">
