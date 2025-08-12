@@ -200,7 +200,6 @@ export default function Dashboard() {
         .from('projects')
         .delete()
         .eq('id', projectToDelete)
-        .eq('created_by', user.id) // Ensure user can only delete their own projects
 
       if (error) {
         throw error
