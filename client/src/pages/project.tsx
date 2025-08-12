@@ -217,18 +217,12 @@ export default function ProjectPage() {
     });
 
     try {
-      // Start the fetch with timeout but don't await it immediately
-      const fetchPromise = Promise.race([
-        fetch(webhookPath, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }),
-        new Promise<Response>(
-          (_, reject) =>
-            setTimeout(() => reject(new Error("Request timeout")), 30000), // 30 second timeout
-        ),
-      ]);
+      // Start the fetch but don't await it immediately
+      const fetchPromise = fetch(webhookPath, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
       // Start polling that checks if webhook has completed
       startPollingForWebhookCompletion(
