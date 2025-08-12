@@ -308,8 +308,8 @@ export default function Dashboard() {
       return <ChevronDown className="h-4 w-4 text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" />
     }
     return sortDirection === 'asc' 
-      ? <ChevronUp className="h-4 w-4 text-blue-400" />
-      : <ChevronDown className="h-4 w-4 text-blue-400" />
+      ? <ChevronUp className="h-4 w-4 text-gray-300" />
+      : <ChevronDown className="h-4 w-4 text-gray-300" />
   }
 
   const getStatusColor = (status: string) => {
@@ -374,7 +374,7 @@ export default function Dashboard() {
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
               className="flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg px-3 py-2 transition-colors"
             >
-              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
                 <span className="text-white font-medium text-sm">{getUserInitials()}</span>
               </div>
               <ChevronDown className="w-4 h-4 text-gray-400" />
@@ -384,7 +384,7 @@ export default function Dashboard() {
               <div className="fixed right-6 top-16 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-[99999]">
                 <div className="p-4 border-b border-gray-700">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                    <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
                       <span className="text-white font-medium">{getUserInitials()}</span>
                     </div>
                     <div>
@@ -420,7 +420,7 @@ export default function Dashboard() {
               </div>
               <Button 
                 onClick={() => setIsNewProjectModalOpen(true)}
-                className="glass-card hover:bg-white/5 text-white px-6 py-3 rounded-full border-blue-500/30 hover:border-blue-400/50 transition-all duration-300"
+                className="glass-card hover:bg-white/5 text-white px-6 py-3 rounded-full border-gray-500/30 hover:border-gray-400/50 transition-all duration-300"
               >
                 + New Project
               </Button>

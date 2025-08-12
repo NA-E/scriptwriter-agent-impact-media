@@ -893,7 +893,7 @@ export default function ProjectPage() {
                     flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors
                     ${
                       isActive
-                        ? "bg-blue-600 text-white"
+                        ? "bg-gray-600 text-white"
                         : isCompleted
                           ? "text-green-400 hover:bg-gray-700"
                           : isDisabled
