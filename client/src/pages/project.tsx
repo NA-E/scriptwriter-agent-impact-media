@@ -268,7 +268,7 @@ export default function ProjectPage() {
       {
         "youtube-url": project.youtube_url,
         "client-info": project.client_info || "",
-        context: project.context,
+        "context": project.context,
         "project-id": project.id,
         "user-id": user.id,
       },
@@ -309,10 +309,12 @@ export default function ProjectPage() {
             );
             if (existing) {
               return prev.map((step) =>
-                step.step_number === stepNumber ? stepsData[0] : step,
+                step.step_number === stepNumber 
+                  ? { ...step, ...stepsData[0] } 
+                  : step,
               );
             } else {
-              return [...prev, stepsData[0]];
+              return [...prev, stepsData[0]].sort((a, b) => a.step_number - b.step_number);
             }
           });
 
