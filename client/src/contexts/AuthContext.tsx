@@ -42,16 +42,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
       
-      // Insert user into users table if they don't exist
-      if (session?.user) {
+      // Only manage loading for sign-out events, not sign-in
+      if (event === 'SIGNED_OUT') {
+        setLoading(false)
+      } else if (session?.user) {
         // Don't set loading during user upsert to avoid animation flicker
         handleUserUpsert(session.user)
-      } else {
-        setLoading(false)
       }
     })
 
@@ -90,7 +90,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/dashboard`,
-        skipBrowserRedirect: true // This prevents page redirect and uses popup
+        skipBrowserRedirect: true, // This prevents page redirect and uses popup
+        queryParams: {
+          prompt: 'select_account' // Force Google to show account selection
+        }
       }
     })
     if (error) throw error
