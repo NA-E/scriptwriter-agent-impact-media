@@ -90,7 +90,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/dashboard`,
-        skipBrowserRedirect: true, // This prevents page redirect and uses popup
         queryParams: {
           prompt: 'select_account' // Force Google to show account selection
         }
