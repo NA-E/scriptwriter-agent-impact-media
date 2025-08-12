@@ -267,7 +267,7 @@ export default function ProjectPage() {
       {
         "youtube-url": project.youtube_url,
         "client-info": project.client_info || "",
-        context: project.context,
+        "context": project.context,
         "project-id": project.id,
         "user-id": user.id,
       },
