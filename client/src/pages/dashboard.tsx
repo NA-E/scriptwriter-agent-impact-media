@@ -549,7 +549,7 @@ export default function Dashboard() {
                             <div className="flex items-center">
                               <div className="w-16 bg-gray-700 rounded-full h-2 mr-2">
                                 <div 
-                                  className="bg-blue-600 h-2 rounded-full" 
+                                  className="bg-gray-400 h-2 rounded-full" 
                                   style={{width: `${((project.current_step || 0) / 3) * 100}%`}}
                                 ></div>
                               </div>
