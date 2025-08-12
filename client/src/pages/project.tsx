@@ -210,37 +210,36 @@ export default function ProjectPage() {
     setProcessingState(true);
     if (switchTab) setActiveTab(switchTab);
 
+    // Show immediate feedback to user
+    toast({
+      title: "Processing Started",
+      description: `${stepName} has been initiated`,
+    });
+
     try {
-      const response = await fetch(webhookPath, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      // Start the fetch with timeout but don't await it immediately
+      const fetchPromise = Promise.race([
+        fetch(webhookPath, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }),
+        new Promise<Response>((_, reject) => 
+          setTimeout(() => reject(new Error('Request timeout')), 30000) // 30 second timeout
+        )
+      ]);
 
-      // toast({
-      //   title: "Processing Started",
-      //   description: `${stepName} has been initiated`,
-      // });
-      console.log(`${stepName} initiated, waiting for results...`);
+      // Start polling that checks if webhook has completed
+      startPollingForWebhookCompletion(
+        fetchPromise, 
+        stepNumber, 
+        stepName, 
+        setProcessingState
+      );
 
-      if (!response.ok) {
-        throw new Error(
-          `Webhook request failed with status ${response.status}`,
-        );
-      }
-
-      const result = await response.json();
-
-      if (result.success) {
-        // Start polling for results
-        startPollingForResults(stepNumber, stepName, setProcessingState);
-      } else {
-        throw new Error(result.message || "Webhook failed");
-      }
     } catch (error: any) {
       console.error(`Error starting ${stepName}:`, error);
 
-      // Show specific error message for different failure types
       let errorMessage = `Failed to start ${stepName}`;
       if (error.message.includes("524")) {
         errorMessage = `${stepName} service is currently unavailable. Please try again later.`;
@@ -257,6 +256,117 @@ export default function ProjectPage() {
       });
       setProcessingState(false);
     }
+  };
+
+  // New polling function that waits for webhook completion
+  const startPollingForWebhookCompletion = (
+    fetchPromise: Promise<Response>,
+    stepNumber: number,
+    stepName: string,
+    setProcessingState: (state: boolean) => void,
+  ) => {
+    let webhookCompleted = false;
+    let webhookResult: any = null;
+
+    // Handle the webhook promise
+    fetchPromise
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`Webhook request failed with status ${response.status}`);
+        }
+        const result = await response.json();
+        webhookResult = result;
+        webhookCompleted = true;
+      })
+      .catch((error) => {
+        console.error(`Error in ${stepName} webhook:`, error);
+        webhookCompleted = true; // Mark as completed even on error
+        webhookResult = { success: false, error: error.message };
+      });
+
+    // Start polling to check webhook completion
+    const pollInterval = setInterval(async () => {
+      if (webhookCompleted) {
+        clearInterval(pollInterval);
+
+        if (webhookResult?.success) {
+          // Webhook succeeded, now get data from database
+          try {
+            const { data: stepsData, error } = await supabase
+              .from("project_steps")
+              .select("*")
+              .eq("project_id", projectId)
+              .eq("step_number", stepNumber)
+              .eq("status", "completed");
+
+            if (error) {
+              throw error;
+            }
+
+            if (stepsData && stepsData.length > 0) {
+              // Update UI with database results (using immutable update)
+              setProjectSteps((prev) => {
+                const existing = prev.find(
+                  (step) => step.step_number === stepNumber,
+                );
+                if (existing) {
+                  return prev.map((step) =>
+                    step.step_number === stepNumber 
+                      ? { ...step, ...stepsData[0] }  // Immutable update
+                      : step,
+                  );
+                } else {
+                  return [...prev, stepsData[0]].sort((a, b) => a.step_number - b.step_number);
+                }
+              });
+
+              setProcessingState(false);
+              toast({
+                title: `${stepName} Complete`,
+                description: `${stepName} has been completed successfully`,
+              });
+            } else {
+              // Webhook says success but no data in DB yet - this shouldn't happen
+              toast({
+                title: "Processing Issue",
+                description: `${stepName} completed but results not found. Please refresh the page.`,
+                variant: "destructive",
+              });
+              setProcessingState(false);
+            }
+          } catch (error) {
+            console.error("Error fetching results from database:", error);
+            toast({
+              title: "Error",
+              description: "Failed to retrieve results from database",
+              variant: "destructive",
+            });
+            setProcessingState(false);
+          }
+        } else {
+          // Webhook failed
+          toast({
+            title: "Error",
+            description: webhookResult?.error || `${stepName} failed`,
+            variant: "destructive",
+          });
+          setProcessingState(false);
+        }
+      }
+    }, 1000); // Check every 1 second (faster since we're just checking a variable)
+
+    // Safety timeout: stop after 10 minutes
+    setTimeout(() => {
+      if (!webhookCompleted) {
+        clearInterval(pollInterval);
+        setProcessingState(false);
+        toast({
+          title: "Timeout",
+          description: `${stepName} is taking longer than expected. Please check back later.`,
+          variant: "destructive",
+        });
+      }
+    }, 600000); // 10 minutes
   };
 
   const handleStartTranscriptAnalysis = async () => {
@@ -277,7 +387,7 @@ export default function ProjectPage() {
     );
   };
 
-  // Reusable polling function for any workflow step
+  // Keep the old polling function as backup/alternative
   const startPollingForResults = (
     stepNumber: number,
     stepName: string,
