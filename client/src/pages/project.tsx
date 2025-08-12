@@ -224,19 +224,19 @@ export default function ProjectPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         }),
-        new Promise<Response>((_, reject) => 
-          setTimeout(() => reject(new Error('Request timeout')), 30000) // 30 second timeout
-        )
+        new Promise<Response>(
+          (_, reject) =>
+            setTimeout(() => reject(new Error("Request timeout")), 30000), // 30 second timeout
+        ),
       ]);
 
       // Start polling that checks if webhook has completed
       startPollingForWebhookCompletion(
-        fetchPromise, 
-        stepNumber, 
-        stepName, 
-        setProcessingState
+        fetchPromise,
+        stepNumber,
+        stepName,
+        setProcessingState,
       );
-
     } catch (error: any) {
       console.error(`Error starting ${stepName}:`, error);
 
@@ -272,7 +272,9 @@ export default function ProjectPage() {
     fetchPromise
       .then(async (response) => {
         if (!response.ok) {
-          throw new Error(`Webhook request failed with status ${response.status}`);
+          throw new Error(
+            `Webhook request failed with status ${response.status}`,
+          );
         }
         const result = await response.json();
         webhookResult = result;
@@ -311,12 +313,14 @@ export default function ProjectPage() {
                 );
                 if (existing) {
                   return prev.map((step) =>
-                    step.step_number === stepNumber 
-                      ? { ...step, ...stepsData[0] }  // Immutable update
+                    step.step_number === stepNumber
+                      ? { ...step, ...stepsData[0] } // Immutable update
                       : step,
                   );
                 } else {
-                  return [...prev, stepsData[0]].sort((a, b) => a.step_number - b.step_number);
+                  return [...prev, stepsData[0]].sort(
+                    (a, b) => a.step_number - b.step_number,
+                  );
                 }
               });
 
@@ -378,7 +382,7 @@ export default function ProjectPage() {
       {
         "youtube-url": project.youtube_url,
         "client-info": project.client_info || "",
-        "context": project.context,
+        context: project.context,
         "project-id": project.id,
         "user-id": user.id,
       },
@@ -388,64 +392,64 @@ export default function ProjectPage() {
   };
 
   // Keep the old polling function as backup/alternative
-  const startPollingForResults = (
-    stepNumber: number,
-    stepName: string,
-    setProcessingState: (state: boolean) => void,
-  ) => {
-    const pollInterval = setInterval(async () => {
-      try {
-        const { data: stepsData, error } = await supabase
-          .from("project_steps")
-          .select("*")
-          .eq("project_id", projectId)
-          .eq("step_number", stepNumber)
-          .eq("status", "completed");
+  // const startPollingForResults = (
+  //   stepNumber: number,
+  //   stepName: string,
+  //   setProcessingState: (state: boolean) => void,
+  // ) => {
+  //   const pollInterval = setInterval(async () => {
+  //     try {
+  //       const { data: stepsData, error } = await supabase
+  //         .from("project_steps")
+  //         .select("*")
+  //         .eq("project_id", projectId)
+  //         .eq("step_number", stepNumber)
+  //         .eq("status", "completed");
 
-        if (error) {
-          console.error("Error polling for results:", error);
-          return;
-        }
+  //       if (error) {
+  //         console.error("Error polling for results:", error);
+  //         return;
+  //       }
 
-        if (stepsData && stepsData.length > 0) {
-          // Results found, update state and stop polling
-          toast({
-            title: `${stepName} Complete`,
-            description: `Stepdata was found`,
-          });
-          setProjectSteps((prev) => {
-            const existing = prev.find(
-              (step) => step.step_number === stepNumber,
-            );
-            if (existing) {
-              return prev.map((step) =>
-                step.step_number === stepNumber 
-                  ? { ...step, ...stepsData[0] } 
-                  : step,
-              );
-            } else {
-              return [...prev, stepsData[0]].sort((a, b) => a.step_number - b.step_number);
-            }
-          });
+  //       if (stepsData && stepsData.length > 0) {
+  //         // Results found, update state and stop polling
+  //         toast({
+  //           title: `${stepName} Complete`,
+  //           description: `Stepdata was found`,
+  //         });
+  //         setProjectSteps((prev) => {
+  //           const existing = prev.find(
+  //             (step) => step.step_number === stepNumber,
+  //           );
+  //           if (existing) {
+  //             return prev.map((step) =>
+  //               step.step_number === stepNumber
+  //                 ? { ...step, ...stepsData[0] }
+  //                 : step,
+  //             );
+  //           } else {
+  //             return [...prev, stepsData[0]].sort((a, b) => a.step_number - b.step_number);
+  //           }
+  //         });
 
-          clearInterval(pollInterval);
-          setProcessingState(false);
-          toast({
-            title: `${stepName} Complete`,
-            description: `${stepName} has been completed successfully`,
-          });
-        }
-      } catch (error) {
-        console.error("Error polling for results:", error);
-      }
-    }, 3000); // Poll every 3 seconds
+  //         clearInterval(pollInterval);
+  //         setProcessingState(false);
+  //         toast({
+  //           title: `${stepName} Complete`,
+  //           description: `${stepName} has been completed successfully`,
+  //         });
+  //       }
+  //     } catch (error) {
+  //       console.error("Error polling for results:", error);
+  //     }
+  //   }, 3000); // Poll every 3 seconds
 
-    // Stop polling after 5 minutes
-    setTimeout(() => {
-      clearInterval(pollInterval);
-      setProcessingState(false);
-    }, 300000);
-  };
+  //   // Stop polling after 5 minutes
+  //   setTimeout(() => {
+  //     clearInterval(pollInterval);
+  //     setProcessingState(false);
+  //   }, 300000);
+  // };
 
   const startResearchStep = async () => {
     if (!project || !user?.id) return;
