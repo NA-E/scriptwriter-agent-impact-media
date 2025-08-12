@@ -232,7 +232,7 @@ export default function ProjectPage() {
 
       if (result.success) {
         // Start polling for results
-        startPollingForResults(stepNumber, stepName);
+        startPollingForResults(stepNumber, stepName, setProcessingState);
       } else {
         throw new Error(result.message || "Webhook failed");
       }
@@ -254,7 +254,6 @@ export default function ProjectPage() {
         description: errorMessage,
         variant: "destructive",
       });
-    } finally {
       setProcessingState(false);
     }
   };
@@ -278,7 +277,7 @@ export default function ProjectPage() {
   };
 
   // Reusable polling function for any workflow step
-  const startPollingForResults = (stepNumber: number, stepName: string) => {
+  const startPollingForResults = (stepNumber: number, stepName: string, setProcessingState: (state: boolean) => void) => {
     const pollInterval = setInterval(async () => {
       try {
         const { data: stepsData, error } = await supabase
@@ -313,6 +312,7 @@ export default function ProjectPage() {
           });
 
           clearInterval(pollInterval);
+          setProcessingState(false);
           toast({
             title: `${stepName} Complete`,
             description: `${stepName} has been completed successfully`,
@@ -326,6 +326,7 @@ export default function ProjectPage() {
     // Stop polling after 5 minutes
     setTimeout(() => {
       clearInterval(pollInterval);
+      setProcessingState(false);
     }, 300000);
   };
 
