@@ -48,10 +48,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Insert user into users table if they don't exist
       if (session?.user) {
-        await handleUserUpsert(session.user)
+        // Don't set loading during user upsert to avoid animation flicker
+        handleUserUpsert(session.user)
+      } else {
+        setLoading(false)
       }
-      
-      setLoading(false)
     })
 
     return () => subscription.unsubscribe()
