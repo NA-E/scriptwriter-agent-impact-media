@@ -217,10 +217,11 @@ export default function ProjectPage() {
         body: JSON.stringify(payload),
       });
 
-      toast({
-        title: "Processing Started",
-        description: `${stepName} has been initiated`,
-      });
+      // toast({
+      //   title: "Processing Started",
+      //   description: `${stepName} has been initiated`,
+      // });
+      console.log(`${stepName} initiated, waiting for results...`);
 
       if (!response.ok) {
         throw new Error(
@@ -267,7 +268,7 @@ export default function ProjectPage() {
       {
         "youtube-url": project.youtube_url,
         "client-info": project.client_info || "",
-        "context": project.context,
+        context: project.context,
         "project-id": project.id,
         "user-id": user.id,
       },
@@ -277,7 +278,11 @@ export default function ProjectPage() {
   };
 
   // Reusable polling function for any workflow step
-  const startPollingForResults = (stepNumber: number, stepName: string, setProcessingState: (state: boolean) => void) => {
+  const startPollingForResults = (
+    stepNumber: number,
+    stepName: string,
+    setProcessingState: (state: boolean) => void,
+  ) => {
     const pollInterval = setInterval(async () => {
       try {
         const { data: stepsData, error } = await supabase
@@ -299,7 +304,7 @@ export default function ProjectPage() {
             description: `Stepdata was found`,
           });
           setProjectSteps((prev) => {
-          const existing = prev.find(
+            const existing = prev.find(
               (step) => step.step_number === stepNumber,
             );
             if (existing) {
