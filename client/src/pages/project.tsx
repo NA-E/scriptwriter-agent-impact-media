@@ -852,6 +852,9 @@ export default function ProjectPage() {
             <div className="mt-2 text-sm text-gray-400">
               YouTube URL: {project.youtube_url}
             </div>
+            <div className="mt-2 text-sm text-gray-400">
+              Project Context: {project.context || "N/A"}
+            </div>
           </div>
         </div>
       </div>
