@@ -836,7 +836,7 @@ export default function ProjectPage() {
                 onClick={() => setLocation("/dashboard")}
                 variant="ghost"
                 size="sm"
-                className="text-gray-400 hover:text-white"
+                className="text-gray-400 hover:text-gray-300 hover:bg-transparent"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Dashboard
