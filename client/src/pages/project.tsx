@@ -197,6 +197,11 @@ export default function ProjectPage() {
         body: JSON.stringify(payload)
       })
 
+      toast({
+        title: "Processing Started",
+        description: `${stepName} has been initiated`,
+      })
+      
       if (!response.ok) {
         throw new Error(`Webhook request failed with status ${response.status}`)
       }
@@ -204,10 +209,6 @@ export default function ProjectPage() {
       const result = await response.json()
       
       if (result.success) {
-        toast({
-          title: "Processing Started",
-          description: `${stepName} has been initiated`,
-        })
         
         // Start polling for results
         startPollingForResults(stepNumber, stepName)
