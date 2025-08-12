@@ -274,8 +274,6 @@ export default function ProjectPage() {
 
         if (stepsData && stepsData.length > 0) {
           // Results found, update state and stop polling
-          console.log('Step data from database:', JSON.stringify(stepsData[0], null, 2))
-          console.log('Processing cost from database:', stepsData[0].processing_cost)
           setProjectSteps(prev => {
             const existing = prev.find(step => step.step_number === stepNumber)
             if (existing) {
