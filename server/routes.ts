@@ -2,6 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 
+const WEBHOOK_TIMEOUT_MS = 720000; // 12 minutes - single source of truth
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // put application routes here
   // prefix all routes with /api
@@ -21,11 +23,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), WEBHOOK_TIMEOUT_MS);
+
       const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(req.body)
+        body: JSON.stringify(req.body),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`Webhook request failed: ${response.status}`);
@@ -56,9 +64,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Set 5 minute timeout for research webhook
+      // Set timeout for research webhook
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutes
+      const timeoutId = setTimeout(() => controller.abort(), WEBHOOK_TIMEOUT_MS);
 
       console.log('Research webhook URL:', webhookUrl);
       console.log('Request body:', JSON.stringify(req.body, null, 2));
@@ -109,12 +117,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Request body:', JSON.stringify(req.body, null, 2));
       console.log('Making POST request to external webhook...');
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), WEBHOOK_TIMEOUT_MS);
+
       const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(req.body)
+        body: JSON.stringify(req.body),
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
       console.log('External webhook response received - Status:', response.status);
       console.log('Response method validation - sent POST, received status:', response.status);
 
