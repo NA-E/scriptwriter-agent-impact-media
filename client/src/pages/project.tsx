@@ -117,8 +117,8 @@ export default function ProjectPage() {
       // Add timeout to prevent infinite hanging
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(
-          () => reject(new Error("Request timeout after 1 minute")),
-          1000000,
+          () => reject(new Error("Request timeout after 10 seconds")),
+          10000,
         ),
       );
 
@@ -851,9 +851,6 @@ export default function ProjectPage() {
             </div>
             <div className="mt-2 text-sm text-gray-400">
               YouTube URL: {project.youtube_url}
-            </div>
-            <div className="mt-2 text-sm text-gray-400">
-              Project Context: {project.context || "N/A"}
             </div>
           </div>
         </div>
