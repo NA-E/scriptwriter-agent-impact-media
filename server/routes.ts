@@ -35,6 +35,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
+        // Log detailed error information for debugging
+        const responseText = await response.text();
+        const headers = Object.fromEntries(response.headers.entries());
+        console.error('Webhook failed with status:', response.status);
+        console.error('Response headers:', JSON.stringify(headers, null, 2));
+        console.error('Response body:', responseText);
         throw new Error(`Webhook request failed: ${response.status}`);
       }
 
@@ -82,6 +88,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Research webhook response status:', response.status);
 
       if (!response.ok) {
+        // Log detailed error information for debugging
+        const responseText = await response.text();
+        const headers = Object.fromEntries(response.headers.entries());
+        console.error('Research webhook failed with status:', response.status);
+        console.error('Response headers:', JSON.stringify(headers, null, 2));
+        console.error('Response body:', responseText);
         throw new Error(`Research webhook request failed: ${response.status}`);
       }
 
@@ -134,9 +146,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Outline generation response headers:', Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.log('Outline generation error response:', errorText);
-        throw new Error(`Outline generation webhook request failed: ${response.status} - ${errorText}`);
+        // Log detailed error information for debugging
+        const responseText = await response.text();
+        const headers = Object.fromEntries(response.headers.entries());
+        console.error('Outline generation webhook failed with status:', response.status);
+        console.error('Response headers:', JSON.stringify(headers, null, 2));
+        console.error('Response body:', responseText);
+        throw new Error(`Outline generation webhook request failed: ${response.status}`);
       }
 
       const result = await response.json();
