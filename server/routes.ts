@@ -1,8 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-
-const WEBHOOK_TIMEOUT_MS = 720000; // 12 minutes - single source of truth
+import { WEBHOOK_TIMEOUT_MS } from "../shared/constants";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // put application routes here

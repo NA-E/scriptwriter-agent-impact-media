@@ -15,6 +15,7 @@ import { useParams, useLocation } from "wouter";
 import { supabase, type Database } from "@/lib/supabase";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { WEBHOOK_TIMEOUT_MS } from "@shared/constants";
 
 type Project = Database["public"]["Tables"]["projects"]["Row"];
 type ProjectStep = {
@@ -218,11 +219,18 @@ export default function ProjectPage() {
 
     try {
       // Start the fetch but don't await it immediately
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), WEBHOOK_TIMEOUT_MS);
+      
       const fetchPromise = fetch(webhookPath, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+        signal: controller.signal,
       });
+
+      // Clear timeout when request completes
+      fetchPromise.finally(() => clearTimeout(timeoutId));
 
       // Start polling that checks if webhook has completed
       startPollingForWebhookCompletion(
