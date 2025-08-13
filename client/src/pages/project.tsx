@@ -365,7 +365,7 @@ export default function ProjectPage() {
           setProcessingState(false);
         }
       }
-    }, 1000); // Check every 1 second (faster since we're just checking a variable)
+    }, 10000); // Check every 10 second (faster since we're just checking a variable)
 
     // Safety timeout: stop after 10 minutes
     setTimeout(() => {
