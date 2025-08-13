@@ -220,14 +220,20 @@ export default function ProjectPage() {
     try {
       // Start the fetch but don't await it immediately
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), WEBHOOK_TIMEOUT_MS);
-      
+      const timeoutId = setTimeout(
+        () => controller.abort(),
+        WEBHOOK_TIMEOUT_MS,
+      );
+
+      console.log("just before the webhook fetch call");
       const fetchPromise = fetch(webhookPath, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
         signal: controller.signal,
       });
+
+      console.log("time limit was added of ", WEBHOOK_TIMEOUT_MS);
 
       // Clear timeout when request completes
       fetchPromise.finally(() => clearTimeout(timeoutId));
