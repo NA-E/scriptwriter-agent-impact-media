@@ -704,123 +704,65 @@ export default function ProjectPage() {
   const renderAnalysisData = (stepData: ProjectStep) => {
     if (!stepData.raw_response) return null;
 
-    // For step 3 (outline), render as markdown
-    if (stepData.step_number === 3) {
-      return (
-        <div className="prose prose-invert max-w-none text-gray-300">
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={{
-              h1: ({ children }) => (
-                <h1 className="text-2xl font-bold text-white mb-4">
-                  {children}
-                </h1>
-              ),
-              h2: ({ children }) => (
-                <h2 className="text-xl font-semibold text-white mb-3">
-                  {children}
-                </h2>
-              ),
-              h3: ({ children }) => (
-                <h3 className="text-lg font-medium text-white mb-2">
-                  {children}
-                </h3>
-              ),
-              p: ({ children }) => (
-                <p className="text-gray-300 mb-3 leading-relaxed">{children}</p>
-              ),
-              ul: ({ children }) => (
-                <ul className="list-disc list-inside mb-4 space-y-1">
-                  {children}
-                </ul>
-              ),
-              ol: ({ children }) => (
-                <ol className="list-decimal list-inside mb-4 space-y-1">
-                  {children}
-                </ol>
-              ),
-              li: ({ children }) => (
-                <li className="text-gray-300">{children}</li>
-              ),
-              strong: ({ children }) => (
-                <strong className="font-semibold text-white">{children}</strong>
-              ),
-              em: ({ children }) => (
-                <em className="italic text-gray-200">{children}</em>
-              ),
-              code: ({ children }) => (
-                <code className="bg-gray-700 px-2 py-1 rounded text-gray-100 text-sm">
-                  {children}
-                </code>
-              ),
-              blockquote: ({ children }) => (
-                <blockquote className="border-l-4 border-blue-500 pl-4 my-4 text-gray-400 italic">
-                  {children}
-                </blockquote>
-              ),
-            }}
-          >
-            {stepData.raw_response}
-          </ReactMarkdown>
-        </div>
-      );
-    }
-
-    try {
-      const data = JSON.parse(stepData.raw_response);
-
-      const renderValue = (value: any) => {
-        if (Array.isArray(value)) {
-          // Handle arrays (like Target Audience, Transitional Phrases, etc.)
-          return (
-            <ul className="list-disc list-inside space-y-1 text-gray-300">
-              {value.map((item, index) => (
-                <li key={index}>{String(item)}</li>
-              ))}
-            </ul>
-          );
-        } else if (typeof value === "object" && value !== null) {
-          // Handle objects (like nested key-value pairs) - render inline with colons
-          return (
-            <div className="space-y-2 text-gray-300">
-              {Object.entries(value).map(([subKey, subValue]) => (
-                <div key={subKey} className="">
-                  <span className="font-medium text-white">
-                    {subKey.charAt(0).toUpperCase() +
-                      subKey.slice(1).replace(/[-_]/g, " ")}
-                    :
-                  </span>
-                  <span> {String(subValue)}</span>
-                </div>
-              ))}
-            </div>
-          );
-        } else {
-          // Handle strings
-          return (
-            <div className="text-gray-300 whitespace-pre-wrap">
-              {String(value)}
-            </div>
-          );
-        }
-      };
-
-      return (
-        <div className="space-y-6">
-          {Object.entries(data).map(([key, value]) => (
-            <div key={key} className="space-y-3">
-              <h3 className="font-bold text-white text-lg capitalize">
-                {key.replace(/[-_]/g, " ")}
+    // All steps render as markdown
+    return (
+      <div className="prose prose-invert max-w-none text-gray-300">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            h1: ({ children }) => (
+              <h1 className="text-2xl font-bold text-white mb-4">
+                {children}
+              </h1>
+            ),
+            h2: ({ children }) => (
+              <h2 className="text-xl font-semibold text-white mb-3">
+                {children}
+              </h2>
+            ),
+            h3: ({ children }) => (
+              <h3 className="text-lg font-medium text-white mb-2">
+                {children}
               </h3>
-              {renderValue(value)}
-            </div>
-          ))}
-        </div>
-      );
-    } catch (error) {
-      console.error("Error parsing raw response:", error);
-      return <div className="text-gray-400">Unable to parse analysis data</div>;
-    }
+            ),
+            p: ({ children }) => (
+              <p className="text-gray-300 mb-3 leading-relaxed">{children}</p>
+            ),
+            ul: ({ children }) => (
+              <ul className="list-disc list-inside mb-4 space-y-1">
+                {children}
+              </ul>
+            ),
+            ol: ({ children }) => (
+              <ol className="list-decimal list-inside mb-4 space-y-1">
+                {children}
+              </ol>
+            ),
+            li: ({ children }) => (
+              <li className="text-gray-300">{children}</li>
+            ),
+            strong: ({ children }) => (
+              <strong className="font-semibold text-white">{children}</strong>
+            ),
+            em: ({ children }) => (
+              <em className="italic text-gray-200">{children}</em>
+            ),
+            code: ({ children }) => (
+              <code className="bg-gray-700 px-2 py-1 rounded text-gray-100 text-sm">
+                {children}
+              </code>
+            ),
+            blockquote: ({ children }) => (
+              <blockquote className="border-l-4 border-blue-500 pl-4 my-4 text-gray-400 italic">
+                {children}
+              </blockquote>
+            ),
+          }}
+        >
+          {stepData.raw_response}
+        </ReactMarkdown>
+      </div>
+    );
   };
 
   if (isLoading) {
