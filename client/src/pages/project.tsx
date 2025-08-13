@@ -117,26 +117,26 @@ export default function ProjectPage() {
       // Add timeout to prevent infinite hanging
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(
-          () => reject(new Error("Request timeout after 10 seconds")),
-          10000,
+          () => reject(new Error("Request timeout after 1 minute")),
+          60000,
         ),
       );
 
       // Test basic connection with timeout
-      console.log("Testing Supabase connection with timeout...");
-      const connectionTest = supabase.from("projects").select("id").limit(1);
+      // console.log("Testing Supabase connection with timeout...");
+      // const connectionTest = supabase.from("projects").select("id").limit(1);
 
-      const { data: testData, error: testError } = (await Promise.race([
-        connectionTest,
-        timeoutPromise,
-      ])) as any;
+      // const { data: testData, error: testError } = (await Promise.race([
+      //   connectionTest,
+      //   timeoutPromise,
+      // ])) as any;
 
-      console.log("Connection test result:", { testData, testError });
+      // console.log("Connection test result:", { testData, testError });
 
-      if (testError) {
-        console.error("Connection test failed:", testError);
-        throw new Error(`Connection failed: ${testError.message}`);
-      }
+      // if (testError) {
+      //   console.error("Connection test failed:", testError);
+      //   throw new Error(`Connection failed: ${testError.message}`);
+      // }
 
       // If connection works, fetch the specific project
       console.log("Connection successful, fetching project...");
