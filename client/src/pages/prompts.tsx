@@ -21,7 +21,7 @@ export default function PromptsPage() {
 
   useEffect(() => {
     fetchPrompts()
-  }, [sortBy, sortDirection])
+  }, [])
 
   const fetchPrompts = async () => {
     setIsLoading(true)
@@ -30,7 +30,7 @@ export default function PromptsPage() {
         .from('prompts')
         .select('*')
         .eq('is_active', true)
-        .order(sortBy === 'name' ? 'step_number' : sortBy, { ascending: sortDirection === 'asc' })
+        .order('step_number', { ascending: true }) // Always sort by step_number first
 
       const { data, error } = await query
 
