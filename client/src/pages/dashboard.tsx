@@ -481,6 +481,9 @@ export default function Dashboard() {
                         </button>
                       </th>
                       <th className="text-left px-6 py-3 text-sm font-medium text-gray-300">
+                        <span>Created By</span>
+                      </th>
+                      <th className="text-left px-6 py-3 text-sm font-medium text-gray-300">
                         <button 
                           onClick={() => handleSort('updated_at')}
                           className="group flex items-center space-x-1 hover:text-white transition-colors"
@@ -504,7 +507,7 @@ export default function Dashboard() {
                   <tbody className="divide-y divide-gray-700">
                     {isLoading ? (
                       <tr>
-                        <td colSpan={5} className="px-6 py-12 text-center">
+                        <td colSpan={6} className="px-6 py-12 text-center">
                           <div className="flex items-center justify-center">
                             <Loader2 className="h-6 w-6 animate-spin text-gray-400 mr-2" />
                             <span className="text-gray-400">Loading projects...</span>
@@ -513,7 +516,7 @@ export default function Dashboard() {
                       </tr>
                     ) : projects.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="px-6 py-12 text-center">
+                        <td colSpan={6} className="px-6 py-12 text-center">
                           <div className="text-gray-400">
                             <p className="text-lg mb-2">No projects yet</p>
                             <p className="text-sm">Create your first project to get started</p>
@@ -543,6 +546,7 @@ export default function Dashboard() {
                             </div>
                           </td>
                           <td className="px-6 py-4 text-white">{project.client_info || 'N/A'}</td>
+                          <td className="px-6 py-4 text-white">{project.created_by || 'N/A'}</td>
                           <td className="px-6 py-4">
                             <div className="text-white">{formatDate(project.updated_at)}</div>
                             <div className="text-gray-400 text-sm">{getDaysAgo(project.updated_at)}</div>

@@ -121,22 +121,20 @@ export default function PromptsPage() {
                     {getSortIcon('updated_at')}
                   </div>
                 </th>
-                <th className="text-right py-4 px-6 text-sm font-medium text-gray-300">
-                  Actions
-                </th>
+
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-12">
+                  <td colSpan={4} className="text-center py-12">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
                     <p className="text-gray-400">Loading prompts...</p>
                   </td>
                 </tr>
               ) : prompts.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-12">
+                  <td colSpan={4} className="text-center py-12">
                     <p className="text-gray-400 text-lg">No prompts found</p>
                     <p className="text-gray-500 text-sm mt-2">Create your first prompt to get started</p>
                   </td>
@@ -176,19 +174,7 @@ export default function PromptsPage() {
                       <div className="text-white">{formatDate(prompt.updated_at)}</div>
                       <div className="text-gray-400 text-sm">{getDaysAgo(prompt.updated_at)}</div>
                     </td>
-                    <td className="py-4 px-6 text-right">
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleEditPrompt(prompt.step_number)
-                        }}
-                        variant="ghost"
-                        size="sm"
-                        className="text-gray-400 hover:text-white hover:bg-white/10"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </td>
+
                   </tr>
                 ))
               )}
