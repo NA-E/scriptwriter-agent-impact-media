@@ -33,7 +33,6 @@ export default function Dashboard() {
   const [sortBy, setSortBy] = useState<'title' | 'client_info' | 'updated_at' | 'current_step'>('updated_at')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
   const [activeTab, setActiveTab] = useState<'projects' | 'prompts'>('projects')
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -259,18 +258,7 @@ export default function Dashboard() {
         query = query.or(`title.ilike.%${searchQuery}%,client_info.ilike.%${searchQuery}%,youtube_url.ilike.%${searchQuery}%`)
       }
 
-      // Apply status filter if not 'all'
-      if (statusFilter !== 'all') {
-        // Map display status to database values
-        const statusMap: Record<string, string> = {
-          'draft': 'draft',
-          'in_progress': 'in_progress', 
-          'completed': 'completed'
-        }
-        if (statusMap[statusFilter]) {
-          query = query.eq('status', statusMap[statusFilter])
-        }
-      }
+
 
       const { data, error } = await query
 
@@ -346,10 +334,10 @@ export default function Dashboard() {
     fetchProjects()
   }, [])
 
-  // Load projects when sorting or status filter changes
+  // Load projects when sorting changes
   useEffect(() => {
     fetchProjects()
-  }, [sortBy, sortDirection, statusFilter])
+  }, [sortBy, sortDirection])
 
   // Debounce search to avoid too many API calls
   useEffect(() => {
@@ -433,9 +421,9 @@ export default function Dashboard() {
                 </Button>
               </div>
             
-            {/* Search and Filter */}
-            <div className="flex gap-4 mb-8">
-              <div className="flex-1 relative">
+            {/* Search */}
+            <div className="mb-8">
+              <div className="relative">
                 <input
                   type="text"
                   placeholder="Search projects..."
@@ -449,16 +437,6 @@ export default function Dashboard() {
                   </svg>
                 </div>
               </div>
-              <select 
-                value={statusFilter} 
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="glass-card rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 transition-all duration-300"
-              >
-                <option value="all">All Status</option>
-                <option value="draft">Draft</option>
-                <option value="in_progress">In Progress</option>
-                <option value="completed">Completed</option>
-              </select>
             </div>
             
             {/* Projects Table */}
