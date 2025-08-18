@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import AuthPage from "@/pages/auth";
 import Dashboard from "@/pages/dashboard";
 import ProjectPage from "@/pages/project";
+import PromptEditPage from "@/pages/prompt-edit";
 import NotFound from "@/pages/not-found";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -61,6 +62,11 @@ function Router() {
       <Route path="/project/:id">
         <ProtectedRoute>
           <ProjectPage />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/prompts/:stepNumber">
+        <ProtectedRoute>
+          <PromptEditPage />
         </ProtectedRoute>
       </Route>
       <Route path="/">

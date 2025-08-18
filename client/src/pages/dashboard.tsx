@@ -9,6 +9,8 @@ import { LogOut, Box, User, ChevronDown, X, Loader2, Trash2, ChevronUp } from 'l
 import { useState, useEffect, useRef } from 'react'
 import { supabase, type Database } from '@/lib/supabase'
 import { useLocation } from 'wouter'
+import TabNavigation from '@/components/TabNavigation'
+import PromptsPage from '@/pages/prompts'
 
 export default function Dashboard() {
   const { user, signOut } = useAuth()
@@ -31,6 +33,7 @@ export default function Dashboard() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [activeTab, setActiveTab] = useState<'projects' | 'prompts'>('projects')
   const menuRef = useRef<HTMLDivElement>(null)
 
   const handleSignOut = async () => {
@@ -410,20 +413,24 @@ export default function Dashboard() {
       {/* Main Content */}
       <main className="relative z-10 flex-1 px-6 py-8">
         <div className="max-w-7xl mx-auto">
-          {/* Projects Section */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-8">
-              <div>
-                <h1 className="text-4xl font-bold mb-3 text-white tracking-wide">PROJECTS</h1>
-                <p className="text-gray-400">Manage your YouTube scriptwriting projects</p>
+          {/* Tab Navigation */}
+          <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+          
+          {activeTab === 'projects' ? (
+            /* Projects Section */
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <h1 className="text-4xl font-bold mb-3 text-white tracking-wide">PROJECTS</h1>
+                  <p className="text-gray-400">Manage your YouTube scriptwriting projects</p>
+                </div>
+                <Button 
+                  onClick={() => setIsNewProjectModalOpen(true)}
+                  className="glass-card hover:bg-white/5 text-white px-6 py-3 rounded-full border-gray-500/30 hover:border-gray-400/50 transition-all duration-300"
+                >
+                  + New Project
+                </Button>
               </div>
-              <Button 
-                onClick={() => setIsNewProjectModalOpen(true)}
-                className="glass-card hover:bg-white/5 text-white px-6 py-3 rounded-full border-gray-500/30 hover:border-gray-400/50 transition-all duration-300"
-              >
-                + New Project
-              </Button>
-            </div>
             
             {/* Search and Filter */}
             <div className="flex gap-4 mb-8">
@@ -575,11 +582,23 @@ export default function Dashboard() {
               </div>
             </div>
             
-            {/* Results Count */}
-            <div className="mt-4 text-sm text-gray-400">
-              Showing {projects.length} of {projects.length} projects
+              {/* Results Count */}
+              <div className="mt-4 text-sm text-gray-400">
+                Showing {projects.length} of {projects.length} projects
+              </div>
             </div>
-          </div>
+          ) : (
+            /* Prompts Section */
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <h1 className="text-4xl font-bold mb-3 text-white tracking-wide">PROMPTS</h1>
+                  <p className="text-gray-400">Manage your AI prompts for each processing step</p>
+                </div>
+              </div>
+              <PromptsPage />
+            </div>
+          )}
         </div>
       </main>
 

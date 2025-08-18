@@ -89,6 +89,50 @@ export type Database = {
           updated_at?: string | null
         }
       }
+      prompts: {
+        Row: {
+          id: string
+          name: string
+          system_prompt_text: string
+          user_prompt_text: string
+          model_provider: string | null
+          model_name: string | null
+          parameters: any | null
+          created_at: string | null
+          updated_at: string | null
+          step_number: number
+          version: number
+          is_active: boolean
+        }
+        Insert: {
+          id?: string
+          name: string
+          system_prompt_text: string
+          user_prompt_text: string
+          model_provider?: string | null
+          model_name?: string | null
+          parameters?: any | null
+          created_at?: string | null
+          updated_at?: string | null
+          step_number: number
+          version?: number
+          is_active?: boolean
+        }
+        Update: {
+          id?: string
+          name?: string
+          system_prompt_text?: string
+          user_prompt_text?: string
+          model_provider?: string | null
+          model_name?: string | null
+          parameters?: any | null
+          created_at?: string | null
+          updated_at?: string | null
+          step_number?: number
+          version?: number
+          is_active?: boolean
+        }
+      }
     }
   }
 }
