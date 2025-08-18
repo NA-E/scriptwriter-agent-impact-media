@@ -145,9 +145,9 @@ export default function PromptEditPage() {
         description: `Prompt updated to version ${newVersion}`,
       })
 
-      // Redirect back to dashboard
+      // Redirect back to dashboard prompts tab
       setTimeout(() => {
-        setLocation('/dashboard')
+        setLocation('/dashboard?tab=prompts')
       }, 1500)
 
     } catch (error: any) {
@@ -163,7 +163,7 @@ export default function PromptEditPage() {
   }
 
   const handleBack = () => {
-    setLocation('/dashboard')
+    setLocation('/dashboard?tab=prompts')
   }
 
   if (isLoading) {
@@ -198,9 +198,7 @@ export default function PromptEditPage() {
                 Back to Dashboard
               </Button>
             </div>
-            <div className="text-sm text-gray-400">
-              {user?.email}
-            </div>
+
           </div>
         </div>
       </nav>
@@ -245,13 +243,7 @@ export default function PromptEditPage() {
             </div>
           </div>
 
-          {/* System Prompt (Read-only) */}
-          <div>
-            <Label className="text-sm font-medium text-gray-300">System Prompt</Label>
-            <div className="mt-1 p-3 glass-card rounded-lg text-gray-300 text-sm bg-gray-900/50">
-              {prompt.system_prompt_text || 'No system prompt defined'}
-            </div>
-          </div>
+
 
           {/* User Prompt (Editable) */}
           <div>

@@ -36,6 +36,17 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<'projects' | 'prompts'>('projects')
   const menuRef = useRef<HTMLDivElement>(null)
 
+  // Check for tab parameter in URL on mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const tabParam = urlParams.get('tab')
+    if (tabParam === 'prompts') {
+      setActiveTab('prompts')
+      // Clean up URL without triggering a navigation
+      window.history.replaceState({}, '', '/dashboard')
+    }
+  }, [])
+
   const handleSignOut = async () => {
     try {
       await signOut()
