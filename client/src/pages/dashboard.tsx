@@ -11,6 +11,7 @@ import { supabase, type Database } from '@/lib/supabase'
 import { useLocation } from 'wouter'
 import TabNavigation from '@/components/TabNavigation'
 import PromptsPage from '@/pages/prompts'
+import { formatDate, getDaysAgo } from '@/utils/dateFormatting'
 
 export default function Dashboard() {
   const { user, signOut } = useAuth()
@@ -289,23 +290,7 @@ export default function Dashboard() {
     return name.charAt(0).toUpperCase()
   }
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A'
-    return new Date(dateString).toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    })
-  }
 
-  const getDaysAgo = (dateString: string | null) => {
-    if (!dateString) return 'N/A'
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffTime = Math.abs(now.getTime() - date.getTime())
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-    return diffDays === 0 ? 'Today' : `${diffDays} days ago`
-  }
 
   const handleSort = (column: 'title' | 'client_info' | 'updated_at' | 'current_step') => {
     if (sortBy === column) {

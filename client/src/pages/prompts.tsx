@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { ChevronDown, ChevronUp, Edit } from 'lucide-react'
 import { getStepName, isValidStepNumber, type StepNumber } from '@shared/constants'
+import { formatDate, getDaysAgo } from '@/utils/dateFormatting'
 import type { Database } from '@/lib/supabase'
 
 type Prompt = Database['public']['Tables']['prompts']['Row']
@@ -75,27 +76,7 @@ export default function PromptsPage() {
     }
   }
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A'
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffTime = now.getTime() - date.getTime()
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-    
-    if (diffDays === 0) {
-      return 'Today'
-    } else if (diffDays === 1) {
-      return '1 day ago'
-    } else if (diffDays < 30) {
-      return `${diffDays} days ago`
-    } else {
-      return date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
-      })
-    }
-  }
+
 
   const truncateText = (text: string, maxLength: number = 100) => {
     if (text.length <= maxLength) return text
@@ -183,9 +164,8 @@ export default function PromptsPage() {
                       </div>
                     </td>
                     <td className="py-4 px-6">
-                      <div className="text-gray-300 text-sm">
-                        {formatDate(prompt.created_at)}
-                      </div>
+                      <div className="text-white">{formatDate(prompt.created_at)}</div>
+                      <div className="text-gray-400 text-sm">{getDaysAgo(prompt.created_at)}</div>
                     </td>
                     <td className="py-4 px-6">
                       <div className="text-gray-300 text-sm">
@@ -193,9 +173,8 @@ export default function PromptsPage() {
                       </div>
                     </td>
                     <td className="py-4 px-6">
-                      <div className="text-gray-300 text-sm">
-                        {formatDate(prompt.updated_at)}
-                      </div>
+                      <div className="text-white">{formatDate(prompt.updated_at)}</div>
+                      <div className="text-gray-400 text-sm">{getDaysAgo(prompt.updated_at)}</div>
                     </td>
                     <td className="py-4 px-6 text-right">
                       <Button
