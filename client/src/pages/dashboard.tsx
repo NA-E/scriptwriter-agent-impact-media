@@ -246,7 +246,12 @@ export default function Dashboard() {
     try {
       let query = supabase
         .from('projects')
-        .select('*')
+        .select(`
+          *,
+          users!created_by (
+            name
+          )
+        `)
         .order(sortBy, { ascending: sortDirection === 'asc' })
 
       // Apply search filter if search query exists
@@ -546,7 +551,7 @@ export default function Dashboard() {
                             </div>
                           </td>
                           <td className="px-6 py-4 text-white">{project.client_info || 'N/A'}</td>
-                          <td className="px-6 py-4 text-white">{project.created_by || 'N/A'}</td>
+                          <td className="px-6 py-4 text-white">{(project as any).users?.name || project.created_by || 'N/A'}</td>
                           <td className="px-6 py-4">
                             <div className="text-white">{formatDate(project.updated_at)}</div>
                             <div className="text-gray-400 text-sm">{getDaysAgo(project.updated_at)}</div>
