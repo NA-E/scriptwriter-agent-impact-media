@@ -16,6 +16,8 @@ import { supabase, type Database } from "@/lib/supabase";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { WEBHOOK_TIMEOUT_MS } from "@shared/constants";
+import { DEFAULT_MODELS } from "@shared/models";
+import ModelDropdown from "@/components/ModelDropdown";
 
 type Project = Database["public"]["Tables"]["projects"]["Row"];
 type ProjectStep = {
@@ -34,6 +36,7 @@ type ProjectStep = {
   created_at: string | null;
   updated_at: string | null;
   processing_cost: number | null;
+  model_used: string | null;
 };
 
 export default function ProjectPage() {
@@ -52,6 +55,11 @@ export default function ProjectPage() {
   const [isOutlineProcessing, setIsOutlineProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState("transcript");
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Model selection state for each workflow step
+  const [step1Model, setStep1Model] = useState<string>(DEFAULT_MODELS[1]);
+  const [step2Model, setStep2Model] = useState<string>(DEFAULT_MODELS[2]);
+  const [step3Model, setStep3Model] = useState<string>(DEFAULT_MODELS[3]);
 
   const steps = [
     {
@@ -393,6 +401,7 @@ export default function ProjectPage() {
         context: project.context,
         "project-id": project.id,
         "user-id": user.id,
+        "model": step1Model,
       },
       "Transcript analysis",
       setIsProcessing,
@@ -468,6 +477,7 @@ export default function ProjectPage() {
       {
         "project-id": project.id,
         "user-id": user.id,
+        "model": step2Model,
       },
       "Research",
       setIsResearchProcessing,
@@ -484,6 +494,7 @@ export default function ProjectPage() {
       {
         "project-id": project.id,
         "user-id": user.id,
+        "model": step3Model,
       },
       "Outline generation",
       setIsOutlineProcessing,
@@ -641,6 +652,16 @@ export default function ProjectPage() {
               <p className="text-gray-400 mb-4">{readyMessage}</p>
             </div>
 
+            {/* Model Selection for Step 2 */}
+            <div className="mb-6">
+              <ModelDropdown
+                value={step2Model}
+                onChange={setStep2Model}
+                stepNumber={2}
+                disabled={isResearchProcessing}
+              />
+            </div>
+
             <Button
               onClick={startResearchStep}
               disabled={isResearchProcessing}
@@ -667,6 +688,16 @@ export default function ProjectPage() {
           <div>
             <div className="text-center py-8 mb-6">
               <p className="text-gray-400 mb-4">{readyMessage}</p>
+            </div>
+
+            {/* Model Selection for Step 3 */}
+            <div className="mb-6">
+              <ModelDropdown
+                value={step3Model}
+                onChange={setStep3Model}
+                stepNumber={3}
+                disabled={isOutlineProcessing}
+              />
             </div>
 
             <Button
@@ -939,6 +970,16 @@ export default function ProjectPage() {
                             placeholder="https://youtube.com/watch?v=..."
                           />
                         </div>
+                      </div>
+
+                      {/* Model Selection for Step 1 */}
+                      <div className="mb-6">
+                        <ModelDropdown
+                          value={step1Model}
+                          onChange={setStep1Model}
+                          stepNumber={1}
+                          disabled={isProcessing}
+                        />
                       </div>
 
                       <Button
