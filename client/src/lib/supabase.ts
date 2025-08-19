@@ -133,6 +133,62 @@ export type Database = {
           is_active?: boolean
         }
       }
+      project_steps: {
+        Row: {
+          id: string
+          project_id: string | null
+          step_number: number
+          step_name: string
+          status: string
+          step_data: any
+          raw_response: string | null
+          error_message: string | null
+          processing_time: number | null
+          started_at: string | null
+          completed_at: string | null
+          updated_by: string | null
+          created_at: string | null
+          updated_at: string | null
+          processing_cost: number | null
+          model_used: string | null
+        }
+        Insert: {
+          id?: string
+          project_id?: string | null
+          step_number: number
+          step_name: string
+          status?: string
+          step_data?: any
+          raw_response?: string | null
+          error_message?: string | null
+          processing_time?: number | null
+          started_at?: string | null
+          completed_at?: string | null
+          updated_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          processing_cost?: number | null
+          model_used?: string | null
+        }
+        Update: {
+          id?: string
+          project_id?: string | null
+          step_number?: number
+          step_name?: string
+          status?: string
+          step_data?: any
+          raw_response?: string | null
+          error_message?: string | null
+          processing_time?: number | null
+          started_at?: string | null
+          completed_at?: string | null
+          updated_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          processing_cost?: number | null
+          model_used?: string | null
+        }
+      }
     }
   }
 }

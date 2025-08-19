@@ -97,6 +97,15 @@ The application is optimized for Replit deployment with:
 
 ## Changelog
 
+- **August 19, 2025**: Model Dropdown Implementation
+  - Implemented OpenRouter API integration for dynamic model selection
+  - Added ModelDropdown component with provider grouping (OpenAI, Google, Anthropic, Perplexity)
+  - Set workflow-specific default models: Step 1 (claude-3.7-sonnet:thinking), Step 2 (sonar-deep-research), Step 3 (claude-opus-4.1)
+  - Integrated model selection into project workflow steps with payload transmission
+  - Added model_used column to project_steps table for tracking selected models
+  - Updated Supabase Database types to include project_steps table schema
+  - Removed status filter dropdown from projects dashboard for cleaner UI
+
 - **August 10, 2025**: Dark World Aesthetic & Webhook Fix
   - Implemented sophisticated "Dark World" theme inspired by user's reference image
   - Updated branding to "A IMPACT MEDIA" in top left corner (corrected from AI)

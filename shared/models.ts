@@ -32,9 +32,9 @@ export const ALLOWED_PROVIDERS = ['openai', 'google', 'anthropic', 'perplexity']
 
 // Default models for each workflow step
 export const DEFAULT_MODELS = {
-  1: 'anthropic/claude-3.5-sonnet-20241022', // Transcript Analysis
-  2: 'perplexity/llama-3.1-sonar-large-128k-online', // Research  
-  3: 'anthropic/claude-3-opus-20240229'  // Script Outline
+  1: 'anthropic/claude-3.7-sonnet:thinking', // Transcript Analysis
+  2: 'perplexity/sonar-deep-research', // Research  
+  3: 'anthropic/claude-opus-4.1'  // Script Outline
 };
 
 // Extract provider from model ID
