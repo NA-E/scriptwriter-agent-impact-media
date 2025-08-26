@@ -76,7 +76,7 @@ export default function PromptDisplay({ stepNumber }: PromptDisplayProps) {
       <Textarea
         value={prompt}
         readOnly
-        className="min-h-[120px] max-h-[200px] bg-gray-700 border-gray-600 text-gray-300 resize-none cursor-default"
+        className="min-h-[360px] max-h-[600px] bg-gray-700 border-gray-600 text-gray-300 resize-none cursor-default"
         placeholder="No prompt configured"
       />
     </div>
