@@ -21,7 +21,7 @@ export default function PromptDisplay({ stepNumber }: PromptDisplayProps) {
         
         const { data, error } = await supabase
           .from('prompts')
-          .select('system_prompt_text, user_prompt_text')
+          .select('user_prompt_text')
           .eq('step_number', stepNumber)
           .eq('is_active', true)
           .single();
@@ -31,9 +31,7 @@ export default function PromptDisplay({ stepNumber }: PromptDisplayProps) {
         }
 
         if (data) {
-          // Combine system and user prompts
-          const combinedPrompt = `System Prompt:\n${data.system_prompt_text}\n\nUser Prompt:\n${data.user_prompt_text}`;
-          setPrompt(combinedPrompt);
+          setPrompt(data.user_prompt_text || '');
         }
       } catch (err) {
         console.error('Error fetching prompt:', err);
