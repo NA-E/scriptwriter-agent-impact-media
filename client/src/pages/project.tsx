@@ -18,6 +18,7 @@ import remarkGfm from "remark-gfm";
 import { WEBHOOK_TIMEOUT_MS } from "@shared/constants";
 import { DEFAULT_MODELS } from "@shared/models";
 import ModelDropdown from "@/components/ModelDropdown";
+import PromptDisplay from "@/components/PromptDisplay";
 
 type Project = Database["public"]["Tables"]["projects"]["Row"];
 type ProjectStep = {
@@ -662,6 +663,11 @@ export default function ProjectPage() {
               />
             </div>
 
+            {/* Prompt Display for Step 2 */}
+            <div className="mb-6">
+              <PromptDisplay stepNumber={2} />
+            </div>
+
             <Button
               onClick={startResearchStep}
               disabled={isResearchProcessing}
@@ -698,6 +704,11 @@ export default function ProjectPage() {
                 stepNumber={3}
                 disabled={isOutlineProcessing}
               />
+            </div>
+
+            {/* Prompt Display for Step 3 */}
+            <div className="mb-6">
+              <PromptDisplay stepNumber={3} />
             </div>
 
             <Button
@@ -980,6 +991,11 @@ export default function ProjectPage() {
                           stepNumber={1}
                           disabled={isProcessing}
                         />
+                      </div>
+
+                      {/* Prompt Display for Step 1 */}
+                      <div className="mb-6">
+                        <PromptDisplay stepNumber={1} />
                       </div>
 
                       <Button
