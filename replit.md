@@ -97,6 +97,16 @@ The application is optimized for Replit deployment with:
 
 ## Changelog
 
+- **August 28, 2025**: Critical Prompts System Fixes
+  - **FIXED: Race Condition in Versioning** - Implemented atomic database function `create_new_prompt_version()` for thread-safe version management
+  - **FIXED: Transaction Safety** - Replaced manual multi-step operations with single atomic database function using row-level locking
+  - **FIXED: Input Validation** - Added comprehensive validation with 50,000 character limit, XSS protection, and clear error messages
+  - **FIXED: Sorting Implementation** - Implemented proper client-side sorting with memoization for actual data sorting (was previously broken)
+  - **ENHANCED: Error Handling** - Added retry logic for network errors, better error categorization, and user-friendly error messages
+  - **ENHANCED: UX Improvements** - Added real-time character counter with color coding (red >50k, yellow >45k)
+  - **ENHANCED: Performance** - Used React.useMemo for efficient sorting and reduced unnecessary re-renders
+  - Database function ensures atomicity: gets current version → deactivates old → creates new version in single transaction
+
 - **August 19, 2025**: Model Dropdown Implementation
   - Implemented OpenRouter API integration for dynamic model selection
   - Added ModelDropdown component with provider grouping (OpenAI, Google, Anthropic, Perplexity)

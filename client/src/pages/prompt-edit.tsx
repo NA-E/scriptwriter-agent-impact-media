@@ -21,6 +21,7 @@ export default function PromptEditPage() {
   const [userPromptText, setUserPromptText] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [retryCount, setRetryCount] = useState(0)
 
   const stepNumber = params?.stepNumber ? parseInt(params.stepNumber) : 0
 
@@ -71,11 +72,35 @@ export default function PromptEditPage() {
     }
   }
 
+  const validatePrompt = (text: string) => {
+    if (!text.trim()) {
+      throw new Error('Prompt text cannot be empty')
+    }
+    if (text.length > 50000) {
+      throw new Error('Prompt text cannot exceed 50,000 characters')
+    }
+    // Basic XSS protection - remove script tags
+    if (/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi.test(text)) {
+      throw new Error('Script tags are not allowed in prompts')
+    }
+  }
+
   const handleSave = async () => {
-    if (!prompt || !userPromptText.trim()) {
+    if (!prompt) {
       toast({
         title: "Error",
-        description: "Prompt text cannot be empty",
+        description: "Prompt data not loaded",
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      validatePrompt(userPromptText)
+    } catch (error: any) {
+      toast({
+        title: "Validation Error",
+        description: error.message,
         variant: "destructive"
       })
       return
@@ -83,67 +108,36 @@ export default function PromptEditPage() {
 
     setIsSaving(true)
     try {
-      // Begin transaction: Get current version, deactivate current, insert new
+      // Use atomic database function for versioning
+      const { data, error } = await supabase.rpc('create_new_prompt_version', {
+        p_step_number: stepNumber,
+        p_user_prompt_text: userPromptText.trim(),
+        p_system_prompt_text: prompt.system_prompt_text,
+        p_model_provider: prompt.model_provider,
+        p_model_name: prompt.model_name,
+        p_parameters: prompt.parameters
+      })
+
+      if (error) {
+        throw error
+      }
+
+      if (!data || data.length === 0) {
+        throw new Error('Failed to create new prompt version')
+      }
+
+      const newVersion = data[0].version
       
-      // 1. Get current version
-      const { data: currentData, error: versionError } = await supabase
-        .from('prompts')
-        .select('version')
-        .eq('step_number', stepNumber)
-        .eq('is_active', true)
-        .single()
-
-      if (versionError) {
-        throw versionError
-      }
-
-      const newVersion = currentData.version + 1
-
-      // 2. Deactivate current prompt
-      const { error: deactivateError } = await supabase
-        .from('prompts')
-        .update({ is_active: false })
-        .eq('step_number', stepNumber)
-        .eq('is_active', true)
-
-      if (deactivateError) {
-        throw deactivateError
-      }
-
-      // 3. Insert new prompt with incremented version
-      const { data: newPrompt, error: insertError } = await supabase
-        .from('prompts')
-        .insert({
-          step_number: stepNumber,
-          name: getStepName(stepNumber as StepNumber),
-          system_prompt_text: prompt.system_prompt_text,
-          user_prompt_text: userPromptText.trim(),
-          model_provider: prompt.model_provider,
-          model_name: prompt.model_name,
-          parameters: prompt.parameters,
-          version: newVersion,
-          is_active: true
-        })
-        .select()
-        .single()
-
-      if (insertError) {
-        // Try to rollback by reactivating the old prompt
-        await supabase
-          .from('prompts')
-          .update({ is_active: true })
-          .eq('step_number', stepNumber)
-          .eq('version', currentData.version)
-          
-        throw insertError
-      }
-
-      setPrompt(newPrompt)
+      // Reset retry count on successful save
+      setRetryCount(0)
       
       toast({
         title: "Success",
         description: `Prompt updated to version ${newVersion}`,
       })
+
+      // Refresh prompt data
+      await fetchPrompt()
 
       // Redirect back to dashboard prompts tab
       setTimeout(() => {
@@ -152,11 +146,21 @@ export default function PromptEditPage() {
 
     } catch (error: any) {
       console.error('Error saving prompt:', error)
+      
+      // Show retry option for network errors
+      const isNetworkError = error.message?.includes('network') || error.message?.includes('fetch')
+      
       toast({
         title: "Error",
-        description: error.message || "Failed to save prompt",
+        description: isNetworkError && retryCount < 2 
+          ? `${error.message || "Failed to save prompt"}. Click save to retry.`
+          : error.message || "Failed to save prompt",
         variant: "destructive"
       })
+      
+      if (isNetworkError) {
+        setRetryCount(prev => prev + 1)
+      }
     } finally {
       setIsSaving(false)
     }
@@ -258,8 +262,11 @@ export default function PromptEditPage() {
               className="mt-1 glass-card bg-gray-900/50 text-white placeholder-gray-500 border-gray-700 focus:border-blue-500 min-h-[300px]"
               required
             />
-            <div className="mt-2 text-xs text-gray-400">
-              This is the main prompt that will be used for processing. Make sure it's clear and specific.
+            <div className="mt-2 flex justify-between text-xs text-gray-400">
+              <span>This is the main prompt that will be used for processing. Make sure it's clear and specific.</span>
+              <span className={userPromptText.length > 50000 ? 'text-red-400' : userPromptText.length > 45000 ? 'text-yellow-400' : ''}>
+                {userPromptText.length.toLocaleString()}/50,000 characters
+              </span>
             </div>
           </div>
 

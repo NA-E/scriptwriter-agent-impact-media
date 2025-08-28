@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 import { useLocation } from 'wouter'
@@ -27,13 +27,11 @@ export default function PromptsPage() {
   const fetchPrompts = async () => {
     setIsLoading(true)
     try {
-      let query = supabase
+      const { data, error } = await supabase
         .from('prompts')
         .select('*')
         .eq('is_active', true)
-        .order('step_number', { ascending: true }) // Always sort by step_number first
-
-      const { data, error } = await query
+        .order('step_number', { ascending: true })
 
       if (error) {
         throw error
@@ -77,6 +75,36 @@ export default function PromptsPage() {
   }
 
 
+
+  // Apply sorting to the data
+  const sortedPrompts = useMemo(() => {
+    if (!prompts.length) return []
+    
+    return [...prompts].sort((a, b) => {
+      let aVal: any, bVal: any
+      
+      switch (sortBy) {
+        case 'name':
+          aVal = a.name.toLowerCase()
+          bVal = b.name.toLowerCase()
+          break
+        case 'created_at':
+          aVal = new Date(a.created_at || '').getTime()
+          bVal = new Date(b.created_at || '').getTime()
+          break
+        case 'updated_at':
+          aVal = new Date(a.updated_at || '').getTime()
+          bVal = new Date(b.updated_at || '').getTime()
+          break
+        default:
+          return 0
+      }
+      
+      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1
+      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1
+      return 0
+    })
+  }, [prompts, sortBy, sortDirection])
 
   const truncateText = (text: string, maxLength: number = 100) => {
     if (text.length <= maxLength) return text
@@ -140,7 +168,7 @@ export default function PromptsPage() {
                   </td>
                 </tr>
               ) : (
-                prompts.map((prompt) => (
+                sortedPrompts.map((prompt) => (
                   <tr 
                     key={prompt.id} 
                     className="border-b border-gray-800/50 hover:bg-white/5 transition-colors cursor-pointer"
