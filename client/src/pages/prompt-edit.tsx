@@ -140,6 +140,9 @@ export default function PromptEditPage() {
         description: `Prompt updated to version ${newVersion}`,
       });
 
+      // Refresh prompt data
+      await fetchPrompt();
+
       // Redirect back to dashboard prompts tab
       setTimeout(() => {
         setLocation("/dashboard?tab=prompts");
