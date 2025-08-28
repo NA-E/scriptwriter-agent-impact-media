@@ -33,10 +33,10 @@ export default function PromptEditPage() {
       setLocation("/dashboard");
       return;
     }
-    
+
     const controller = new AbortController();
-    
-    const fetchPromptWithAbort = async () => {
+
+    const fetchPrompt = async (signal?: AbortSignal) => {
       setIsLoading(true);
       try {
         const { data, error } = await supabase
@@ -46,8 +46,7 @@ export default function PromptEditPage() {
           .eq("is_active", true)
           .single();
 
-        // Check if request was aborted before updating state
-        if (controller.signal.aborted) return;
+        if (signal?.aborted) return; // Don't update state if cancelled
 
         if (error) {
           if (error.code === "PGRST116") {
@@ -66,9 +65,8 @@ export default function PromptEditPage() {
         setPrompt(data);
         setUserPromptText(data.user_prompt_text);
       } catch (error: any) {
-        // Only handle errors if request wasn't aborted
-        if (controller.signal.aborted) return;
-        
+        if (signal?.aborted) return; // Ignore cancelled requests
+
         console.error("Error fetching prompt:", error);
         toast({
           title: "Error",
@@ -77,19 +75,18 @@ export default function PromptEditPage() {
         });
         setLocation("/dashboard");
       } finally {
-        // Only update loading state if request wasn't aborted
-        if (!controller.signal.aborted) {
-          setIsLoading(false);
+        if (!signal?.aborted) {
+          setIsLoading(false); // Only update if not cancelled
         }
       }
     };
-    
-    fetchPromptWithAbort();
-    
+
+    fetchPrompt(controller.signal);
+
     return () => controller.abort(); // Cleanup: cancel request on unmount/re-run
   }, [stepNumber, match]);
 
-  
+
 
   const validatePrompt = (text: string) => {
     if (!text.trim()) {
