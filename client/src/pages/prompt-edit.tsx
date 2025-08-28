@@ -1,181 +1,158 @@
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
-import { useToast } from '@/hooks/use-toast'
-import { useRoute, useLocation } from 'wouter'
-import { supabase } from '@/lib/supabase'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { ArrowLeft, Save, Loader2 } from 'lucide-react'
-import { getStepName, isValidStepNumber, type StepNumber } from '@shared/constants'
-import type { Database } from '@/lib/supabase'
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { useRoute, useLocation } from "wouter";
+import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import {
+  getStepName,
+  isValidStepNumber,
+  type StepNumber,
+} from "@shared/constants";
+import type { Database } from "@/lib/supabase";
 
-type Prompt = Database['public']['Tables']['prompts']['Row']
+type Prompt = Database["public"]["Tables"]["prompts"]["Row"];
 
 export default function PromptEditPage() {
-  const [match, params] = useRoute('/prompts/:stepNumber')
-  const { user } = useAuth()
-  const { toast } = useToast()
-  const [, setLocation] = useLocation()
-  const [prompt, setPrompt] = useState<Prompt | null>(null)
-  const [userPromptText, setUserPromptText] = useState('')
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
-  const [retryCount, setRetryCount] = useState(0)
+  const [match, params] = useRoute("/prompts/:stepNumber");
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [, setLocation] = useLocation();
+  const [prompt, setPrompt] = useState<Prompt | null>(null);
+  const [userPromptText, setUserPromptText] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const stepNumber = params?.stepNumber ? parseInt(params.stepNumber) : 0
+  const stepNumber = params?.stepNumber ? parseInt(params.stepNumber) : 0;
 
   useEffect(() => {
     if (!match || !isValidStepNumber(stepNumber)) {
-      setLocation('/dashboard')
-      return
+      setLocation("/dashboard");
+      return;
     }
-    fetchPrompt()
-  }, [stepNumber, match])
+    fetchPrompt();
+  }, [stepNumber, match]);
 
   const fetchPrompt = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       const { data, error } = await supabase
-        .from('prompts')
-        .select('*')
-        .eq('step_number', stepNumber)
-        .eq('is_active', true)
-        .single()
+        .from("prompts")
+        .select("*")
+        .eq("step_number", stepNumber)
+        .eq("is_active", true)
+        .single();
 
       if (error) {
-        if (error.code === 'PGRST116') {
+        if (error.code === "PGRST116") {
           // No prompt found
           toast({
             title: "Error",
             description: "Prompt not found",
-            variant: "destructive"
-          })
-          setLocation('/dashboard')
-          return
+            variant: "destructive",
+          });
+          setLocation("/dashboard");
+          return;
         }
-        throw error
+        throw error;
       }
 
-      setPrompt(data)
-      setUserPromptText(data.user_prompt_text)
+      setPrompt(data);
+      setUserPromptText(data.user_prompt_text);
     } catch (error: any) {
-      console.error('Error fetching prompt:', error)
+      console.error("Error fetching prompt:", error);
       toast({
         title: "Error",
         description: "Failed to load prompt",
-        variant: "destructive"
-      })
-      setLocation('/dashboard')
+        variant: "destructive",
+      });
+      setLocation("/dashboard");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const validatePrompt = (text: string) => {
     if (!text.trim()) {
-      throw new Error('Prompt text cannot be empty')
+      throw new Error("Prompt text cannot be empty");
     }
     if (text.length > 50000) {
-      throw new Error('Prompt text cannot exceed 50,000 characters')
+      throw new Error("Prompt text cannot exceed 50,000 characters");
     }
-    // Basic XSS protection - remove script tags
-    if (/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi.test(text)) {
-      throw new Error('Script tags are not allowed in prompts')
-    }
-  }
+  };
 
   const handleSave = async () => {
     if (!prompt) {
       toast({
         title: "Error",
         description: "Prompt data not loaded",
-        variant: "destructive"
-      })
-      return
+        variant: "destructive",
+      });
+      return;
     }
 
     try {
-      validatePrompt(userPromptText)
+      validatePrompt(userPromptText);
     } catch (error: any) {
       toast({
         title: "Validation Error",
         description: error.message,
-        variant: "destructive"
-      })
-      return
+        variant: "destructive",
+      });
+      return;
     }
 
-    setIsSaving(true)
+    setIsSaving(true);
     try {
       // Use atomic database function for versioning
-      const { data, error } = await supabase.rpc('create_new_prompt_version', {
+      const { data, error } = await supabase.rpc("create_new_prompt_version", {
         p_step_number: stepNumber,
         p_user_prompt_text: userPromptText.trim(),
         p_system_prompt_text: prompt.system_prompt_text,
         p_model_provider: prompt.model_provider,
         p_model_name: prompt.model_name,
-        p_parameters: prompt.parameters
-      })
+        p_parameters: prompt.parameters,
+      });
 
-      if (error) {
-        throw error
-      }
+      if (error) throw error;
+      if (!data?.[0]) throw new Error("Failed to create new prompt version");
 
-      if (!data || data.length === 0) {
-        throw new Error('Failed to create new prompt version')
-      }
+      const newVersion = data[0].version;
 
-      const newVersion = data[0].version
-      
-      // Reset retry count on successful save
-      setRetryCount(0)
-      
       toast({
         title: "Success",
         description: `Prompt updated to version ${newVersion}`,
-      })
-
-      // Refresh prompt data
-      await fetchPrompt()
+      });
 
       // Redirect back to dashboard prompts tab
       setTimeout(() => {
-        setLocation('/dashboard?tab=prompts')
-      }, 1500)
-
+        setLocation("/dashboard?tab=prompts");
+      }, 1500);
     } catch (error: any) {
-      console.error('Error saving prompt:', error)
-      
-      // Show retry option for network errors
-      const isNetworkError = error.message?.includes('network') || error.message?.includes('fetch')
-      
+      console.error("Error saving prompt:", error);
       toast({
         title: "Error",
-        description: isNetworkError && retryCount < 2 
-          ? `${error.message || "Failed to save prompt"}. Click save to retry.`
-          : error.message || "Failed to save prompt",
-        variant: "destructive"
-      })
-      
-      if (isNetworkError) {
-        setRetryCount(prev => prev + 1)
-      }
+        description: error.message || "Failed to save prompt",
+        variant: "destructive",
+      });
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const handleBack = () => {
-    setLocation('/dashboard?tab=prompts')
-  }
+    setLocation("/dashboard?tab=prompts");
+  };
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
       </div>
-    )
+    );
   }
 
   if (!prompt) {
@@ -183,7 +160,7 @@ export default function PromptEditPage() {
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-white">Prompt not found</div>
       </div>
-    )
+    );
   }
 
   return (
@@ -202,7 +179,6 @@ export default function PromptEditPage() {
                 Back to Dashboard
               </Button>
             </div>
-
           </div>
         </div>
       </nav>
@@ -222,36 +198,47 @@ export default function PromptEditPage() {
           {/* Read-only Information */}
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <Label className="text-sm font-medium text-gray-300">Step Name</Label>
+              <Label className="text-sm font-medium text-gray-300">
+                Step Name
+              </Label>
               <div className="mt-1 text-white">
                 {getStepName(stepNumber as StepNumber)}
               </div>
             </div>
             <div>
-              <Label className="text-sm font-medium text-gray-300">Version</Label>
+              <Label className="text-sm font-medium text-gray-300">
+                Version
+              </Label>
+              <div className="mt-1 text-white">{prompt.version}</div>
+            </div>
+            <div>
+              <Label className="text-sm font-medium text-gray-300">
+                Created At
+              </Label>
               <div className="mt-1 text-white">
-                {prompt.version}
+                {prompt.created_at
+                  ? new Date(prompt.created_at).toLocaleDateString()
+                  : "N/A"}
               </div>
             </div>
             <div>
-              <Label className="text-sm font-medium text-gray-300">Created At</Label>
+              <Label className="text-sm font-medium text-gray-300">
+                Last Updated
+              </Label>
               <div className="mt-1 text-white">
-                {prompt.created_at ? new Date(prompt.created_at).toLocaleDateString() : 'N/A'}
-              </div>
-            </div>
-            <div>
-              <Label className="text-sm font-medium text-gray-300">Last Updated</Label>
-              <div className="mt-1 text-white">
-                {prompt.updated_at ? new Date(prompt.updated_at).toLocaleDateString() : 'N/A'}
+                {prompt.updated_at
+                  ? new Date(prompt.updated_at).toLocaleDateString()
+                  : "N/A"}
               </div>
             </div>
           </div>
 
-
-
           {/* User Prompt (Editable) */}
           <div>
-            <Label htmlFor="user-prompt" className="text-sm font-medium text-gray-300">
+            <Label
+              htmlFor="user-prompt"
+              className="text-sm font-medium text-gray-300"
+            >
               User Prompt Text *
             </Label>
             <Textarea
@@ -262,11 +249,9 @@ export default function PromptEditPage() {
               className="mt-1 glass-card bg-gray-900/50 text-white placeholder-gray-500 border-gray-700 focus:border-blue-500 min-h-[300px]"
               required
             />
-            <div className="mt-2 flex justify-between text-xs text-gray-400">
-              <span>This is the main prompt that will be used for processing. Make sure it's clear and specific.</span>
-              <span className={userPromptText.length > 50000 ? 'text-red-400' : userPromptText.length > 45000 ? 'text-yellow-400' : ''}>
-                {userPromptText.length.toLocaleString()}/50,000 characters
-              </span>
+            <div className="mt-2 text-xs text-gray-400">
+              This is the main prompt that will be used for processing. Make
+              sure it's clear and specific.
             </div>
           </div>
 
@@ -282,7 +267,11 @@ export default function PromptEditPage() {
             </Button>
             <Button
               onClick={handleSave}
-              disabled={isSaving || !userPromptText.trim() || userPromptText === prompt.user_prompt_text}
+              disabled={
+                isSaving ||
+                !userPromptText.trim() ||
+                userPromptText === prompt.user_prompt_text
+              }
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               {isSaving ? (
@@ -301,5 +290,5 @@ export default function PromptEditPage() {
         </div>
       </main>
     </div>
-  )
+  );
 }
