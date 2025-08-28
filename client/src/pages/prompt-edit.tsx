@@ -262,9 +262,11 @@ export default function PromptEditPage() {
               className="mt-1 glass-card bg-gray-900/50 text-white placeholder-gray-500 border-gray-700 focus:border-blue-500 min-h-[300px]"
               required
             />
-            <div className="mt-2 text-xs text-gray-400">
-              This is the main prompt that will be used for processing. Make
-              sure it's clear and specific.
+            <div className="mt-2 flex justify-between text-xs text-gray-400">
+              <span>This is the main prompt that will be used for processing. Make sure it's clear and specific.</span>
+              <span className={userPromptText.length > 50000 ? 'text-red-400' : userPromptText.length > 45000 ? 'text-yellow-400' : ''}>
+                {userPromptText.length.toLocaleString()}/50,000 characters
+              </span>
             </div>
           </div>
 
