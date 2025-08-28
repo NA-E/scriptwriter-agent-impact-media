@@ -28,6 +28,51 @@ export default function PromptEditPage() {
 
   const stepNumber = params?.stepNumber ? parseInt(params.stepNumber) : 0;
 
+  const fetchPrompt = async (signal?: AbortSignal) => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("prompts")
+        .select("*")
+        .eq("step_number", stepNumber)
+        .eq("is_active", true)
+        .single();
+
+      if (signal?.aborted) return; // Don't update state if cancelled
+
+      if (error) {
+        if (error.code === "PGRST116") {
+          // No prompt found
+          toast({
+            title: "Error",
+            description: "Prompt not found",
+            variant: "destructive",
+          });
+          setLocation("/dashboard");
+          return;
+        }
+        throw error;
+      }
+
+      setPrompt(data);
+      setUserPromptText(data.user_prompt_text);
+    } catch (error: any) {
+      if (signal?.aborted) return; // Ignore cancelled requests
+
+      console.error("Error fetching prompt:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load prompt",
+        variant: "destructive",
+      });
+      setLocation("/dashboard");
+    } finally {
+      if (!signal?.aborted) {
+        setIsLoading(false); // Only update if not cancelled
+      }
+    }
+  };
+
   useEffect(() => {
     if (!match || !isValidStepNumber(stepNumber)) {
       setLocation("/dashboard");
@@ -35,52 +80,6 @@ export default function PromptEditPage() {
     }
 
     const controller = new AbortController();
-
-    const fetchPrompt = async (signal?: AbortSignal) => {
-      setIsLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from("prompts")
-          .select("*")
-          .eq("step_number", stepNumber)
-          .eq("is_active", true)
-          .single();
-
-        if (signal?.aborted) return; // Don't update state if cancelled
-
-        if (error) {
-          if (error.code === "PGRST116") {
-            // No prompt found
-            toast({
-              title: "Error",
-              description: "Prompt not found",
-              variant: "destructive",
-            });
-            setLocation("/dashboard");
-            return;
-          }
-          throw error;
-        }
-
-        setPrompt(data);
-        setUserPromptText(data.user_prompt_text);
-      } catch (error: any) {
-        if (signal?.aborted) return; // Ignore cancelled requests
-
-        console.error("Error fetching prompt:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load prompt",
-          variant: "destructive",
-        });
-        setLocation("/dashboard");
-      } finally {
-        if (!signal?.aborted) {
-          setIsLoading(false); // Only update if not cancelled
-        }
-      }
-    };
-
     fetchPrompt(controller.signal);
 
     return () => controller.abort(); // Cleanup: cancel request on unmount/re-run
