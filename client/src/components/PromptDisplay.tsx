@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
+import { Link } from 'wouter';
 import { supabase } from '@/lib/supabase';
 
 interface PromptDisplayProps {
@@ -48,7 +49,9 @@ export default function PromptDisplay({ stepNumber }: PromptDisplayProps) {
   if (loading) {
     return (
       <div className="space-y-2">
-        <Label className="text-gray-300">Prompt (Edit from Prompts dashboard)</Label>
+        <Label className="text-gray-300">
+          Prompt (<Link href={`/prompts/${stepNumber}`} className="text-blue-400 hover:text-blue-300 underline">Edit</Link>)
+        </Label>
         <div className="flex items-center space-x-2 p-3 bg-gray-700 border border-gray-600 rounded-lg">
           <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
           <span className="text-gray-400">Loading prompt...</span>
@@ -60,7 +63,9 @@ export default function PromptDisplay({ stepNumber }: PromptDisplayProps) {
   if (error) {
     return (
       <div className="space-y-2">
-        <Label className="text-gray-300">Prompt (Edit from Prompts dashboard)</Label>
+        <Label className="text-gray-300">
+          Prompt (<Link href={`/prompts/${stepNumber}`} className="text-blue-400 hover:text-blue-300 underline">Edit</Link>)
+        </Label>
         <div className="p-3 bg-gray-700 border border-gray-600 rounded-lg text-red-400 text-sm">
           {error}
         </div>
@@ -70,7 +75,9 @@ export default function PromptDisplay({ stepNumber }: PromptDisplayProps) {
 
   return (
     <div className="space-y-2">
-      <Label className="text-gray-300">Prompt (Edit from Prompts dashboard)</Label>
+      <Label className="text-gray-300">
+        Prompt (<Link href={`/prompts/${stepNumber}`} className="text-blue-400 hover:text-blue-300 underline">Edit</Link>)
+      </Label>
       <Textarea
         value={prompt}
         readOnly
